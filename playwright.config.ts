@@ -20,14 +20,6 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    // Flags to allow mocked camera media streams in headless Chromium
-    launchOptions: {
-      args: [
-        '--use-fake-ui-for-media-stream',
-        '--use-fake-device-for-media-stream',
-        '--allow-file-access-from-files',
-      ],
-    },
   },
 
   projects: [
@@ -35,7 +27,6 @@ export default defineConfig({
       name: 'Mobile-Safari-iPhone-14',
       use: {
         ...devices['iPhone 14'],
-        permissions: ['camera'],
       },
     },
     {
@@ -43,13 +34,18 @@ export default defineConfig({
       use: {
         ...devices['Pixel 7'],
         permissions: ['camera'],
+        launchOptions: {
+          args: [
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+          ],
+        },
       },
     },
     {
       name: 'Tablet-iPad-Mini',
       use: {
         ...devices['iPad Mini'],
-        permissions: ['camera'],
       },
     },
     {
@@ -57,6 +53,12 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         permissions: ['camera'],
+        launchOptions: {
+          args: [
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+          ],
+        },
       },
     },
   ],
