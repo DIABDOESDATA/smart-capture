@@ -1,0 +1,28 @@
+name: Integration Health Check
+
+on:
+  schedule:
+    # Run once daily at 12:00 UTC
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health-check:
+    name: Public Integration & NHTSA vPIC Availability
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping NHTSA vPIC Public API
+        run: |
+          echo "Pinging NHTSA vPIC API for VIN test decode..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValues/1HGCR2F83HA000000?format=json")
+          echo "NHTSA HTTP Status: $STATUS"
+          if [ "$STATUS" -ne 200 ]; then
+            echo "::error::NHTSA API returned non-200 status code ($STATUS)"
+            exit 1
+          fi
+          echo "NHTSA vPIC API is operational."

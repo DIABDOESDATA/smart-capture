@@ -1,0 +1,57 @@
+{
+  "name": "smart-capture",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Smart Capture — guided automotive photography and inventory media management for dealerships.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "canvas-confetti": "^1.9.4",
+    "clsx": "^2.1.1",
+    "idb": "^8.0.2",
+    "jszip": "^3.10.1",
+    "lucide-react": "^1.16.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwind-merge": "^3.0.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@typescript-eslint/eslint-plugin": "^8.26.0",
+    "@typescript-eslint/parser": "^8.26.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "jsdom": "^26.0.0",
+    "postcss": "^8.5.3",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.7.3",
+    "vite": "^6.2.1",
+    "vitest": "^5.0.5"
+  },
+  "overrides": {
+    "postcss-selector-parser": "^7.1.6"
+  }
+}

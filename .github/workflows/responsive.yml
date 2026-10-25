@@ -1,0 +1,50 @@
+name: Responsive Viewport Matrix
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  responsive-matrix:
+    name: Mobile, Tablet & Foldable Viewports
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers & dependencies
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Responsive Viewport Test Suite
+        run: npx playwright test --project=Mobile-Safari-iPhone-14,Mobile-Chrome-Pixel-7,Tablet-iPad-Mini
+        env:
+          CI: true
+
+      - name: Upload responsive test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-test-results
+          path: test-results/
+          retention-days: 5

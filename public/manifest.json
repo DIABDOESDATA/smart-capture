@@ -1,0 +1,21 @@
+{
+  "short_name": "SmartCapture",
+  "name": "Smart Capture Automotive Photography",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "./",
+  "background_color": "#0B0D11",
+  "theme_color": "#0B0D11",
+  "display": "standalone",
+  "orientation": "any"
+}

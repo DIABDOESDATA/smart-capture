@@ -1,0 +1,23 @@
+name: Feature Request
+description: Propose a new camera overlay, DMS integration, or workflow enhancement
+title: "[FEAT] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea for Smart Capture? Let us know!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What dealership workflow challenge are you trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed feature or workflow improvement.
+    validations:
+      required: true

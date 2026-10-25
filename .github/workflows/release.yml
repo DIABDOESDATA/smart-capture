@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Semantic Version Tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Publish GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck and test
+        run: |
+          npx tsc --noEmit
+          npm test
+
+      - name: Build deployable production bundle
+        run: npm run build
+
+      - name: Package release artifact
+        run: |
+          cd dist
+          zip -r ../smart-capture-release.zip .
+          cd ..
+
+      - name: Determine tag name
+        id: tag_name
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "TAG=${{ github.event.inputs.version_tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag_name.outputs.TAG }}
+          name: Smart Capture Release ${{ steps.tag_name.outputs.TAG }}
+          body: |
+            ## Smart Capture — Automotive Photography Platform
+            Production release for standalone dealer photography and inventory media management.
+
+            ### Features Included
+            - Guided camera with silhouette overlays for all standard body classes
+            - Real-time blur, exposure, and horizon tilt checks
+            - VIN scanner & NHTSA vPIC vehicle decoder
+            - 24-shot master sequence and custom dealership templates
+            - Offline-first IndexedDB capture session persistence
+            - Standardized ordered ZIP export and D-Drive Auto integration adapter
+          files: smart-capture-release.zip
+          draft: false
+          prerelease: false

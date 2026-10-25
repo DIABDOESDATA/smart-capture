@@ -1,0 +1,49 @@
+name: Manual Operations
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Operation to perform'
+        required: true
+        default: 'full-regression'
+        type: choice
+        options:
+          - full-regression
+          - security-audit
+          - preview-build
+
+permissions:
+  contents: read
+
+jobs:
+  execute-operation:
+    name: Run ${{ github.event.inputs.operation }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Full Regression
+        if: ${{ github.event.inputs.operation == 'full-regression' }}
+        run: |
+          npx tsc --noEmit
+          npm test
+          npm run build
+
+      - name: Run Security Audit
+        if: ${{ github.event.inputs.operation == 'security-audit' }}
+        run: npm audit --audit-level=moderate
+
+      - name: Run Preview Build
+        if: ${{ github.event.inputs.operation == 'preview-build' }}
+        run: npm run build
