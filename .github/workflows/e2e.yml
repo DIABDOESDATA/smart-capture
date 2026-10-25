@@ -33,10 +33,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers & OS dependencies
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Run Playwright E2E tests
-        run: npx playwright test --project=Desktop-Chrome,Mobile-Safari-iPhone-14
+        run: npx playwright test --project=Desktop-Chrome --project=Mobile-Safari-iPhone-14
         env:
           CI: true
 

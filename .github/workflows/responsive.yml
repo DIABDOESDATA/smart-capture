@@ -34,10 +34,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers & dependencies
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Run Responsive Viewport Test Suite
-        run: npx playwright test --project=Mobile-Safari-iPhone-14,Mobile-Chrome-Pixel-7,Tablet-iPad-Mini
+        run: npx playwright test --project=Mobile-Safari-iPhone-14 --project=Mobile-Chrome-Pixel-7 --project=Tablet-iPad-Mini
         env:
           CI: true
 
