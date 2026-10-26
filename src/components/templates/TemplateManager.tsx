@@ -13,15 +13,25 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, 
   const [templates, setTemplates] = useState<CaptureTemplate[]>(getDefaultTemplates(dealershipId));
   const [activeTemplateId, setActiveTemplateId] = useState<string>(templates[0].id);
   const [loaded, setLoaded] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [message, setMessage] = useState('');
   useEffect(() => {
+    let live = true;
+    setLoaded(false);
+    setMessage('');
     loadTemplates(dealershipId)
       .then((t) => {
+        if (!live) return;
         setTemplates(t);
         setLoaded(true);
       })
-      .catch(() => setMessage('Templates could not be loaded.'));
-  }, [dealershipId]);
+      .catch(() => {
+        if (live) setMessage('Templates could not be loaded.');
+      });
+    return () => {
+      live = false;
+    };
+  }, [dealershipId, loadAttempt]);
   const saveTemplates = async () => {
     try {
       await persistTemplates(dealershipId, templates);
@@ -50,6 +60,19 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, 
       prev.map((t) => (t.id === activeTemplateId ? { ...t, shots: updatedShots } : t))
     );
   };
+  if (!loaded)
+    return (
+      <section className="recovery-screen">
+        <h1>Photography standards</h1>
+        <p role={message ? 'alert' : 'status'}>{message || 'Loading your saved templates…'}</p>
+        {message && (
+          <button className="primary" onClick={() => setLoadAttempt((n) => n + 1)}>
+            Retry loading templates
+          </button>
+        )}
+        <button onClick={onBack}>Back to sessions</button>
+      </section>
+    );
   return (
     <div className="min-h-screen bg-charcoal-950 text-slate-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-6">

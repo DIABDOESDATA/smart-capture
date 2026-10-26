@@ -43,3 +43,5 @@ Apple's [Safari web-app instructions](https://support.apple.com/en-lamr/guide/ip
 The browser jobs remained in dependency installation for more than ten minutes on the moving ubuntu-latest image, before any tests ran. Both browser workflows now pin Ubuntu 24.04, a platform in the [Playwright support matrix](https://playwright.dev/docs/intro#system-requirements), to reduce runner-image drift. This is an infrastructure adjustment, not a relaxed test or skipped check.
 
 The successful browser run exposed an npm engine warning: locked @zxing/library 0.23.0 requires Node >=24, while CI used 22. Workflows and package engine metadata now align on Node 24, which was already used for the passing local build and 84 tests.
+
+A retry-only pass in the mobile template test exposed a real initialization race: template/standard controls accepted edits before IndexedDB hydration completed. Editing now waits for the saved configuration, failed reads offer retry, and late loads are ignored after leaving the screen. Two deterministic delayed-load regressions cover both editors. CI now fails on flaky test outcomes instead of accepting a retry as clean evidence.
