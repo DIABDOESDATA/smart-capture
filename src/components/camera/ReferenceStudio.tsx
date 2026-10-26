@@ -1,3 +1,4 @@
+import { prepareReferenceRaster } from '@/services/references/prepareRaster';
 import { useEffect, useRef, useState } from 'react';
 import { BodyStyle } from '@/types/vehicle';
 import { ShotAngle } from '@/types/template';
@@ -20,10 +21,26 @@ export function ReferenceStudio({
   const image = useRef<HTMLImageElement>(null);
   useEffect(() => {
     if (!file) return;
-    const u = URL.createObjectURL(file);
-    setUrl(u);
+    let live = true;
+    let previewUrl = '';
+    setUrl('');
     setPoints([]);
-    return () => URL.revokeObjectURL(u);
+    setMessage('Preparing raster reference…');
+    void prepareReferenceRaster(file)
+      .then((raster) => {
+        if (!live) return;
+        previewUrl = URL.createObjectURL(raster);
+        setUrl(previewUrl);
+        setMessage('');
+      })
+      .catch((error) => {
+        if (live)
+          setMessage(error instanceof Error ? error.message : 'Reference could not be prepared.');
+      });
+    return () => {
+      live = false;
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
   }, [file]);
   return (
     <section className="reference-studio">

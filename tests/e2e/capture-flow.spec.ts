@@ -66,7 +66,15 @@ test('full premium sample checklist persists, resumes and exports 20 ordered ima
   await expect(page.getByLabel('Capture vehicle photo')).toBeDisabled();
   await sample(page);
   await page.screenshot({ path: info.outputPath('camera-portrait.png') });
-  await expect(page.locator('.viewfinder')).toHaveScreenshot('camera-reference.png', {
+  const bounds = await page.locator('.viewfinder').boundingBox();
+  if (!bounds) throw new Error('Camera viewfinder is missing.');
+  await expect(page).toHaveScreenshot('camera-reference.png', {
+    clip: {
+      x: Math.round(bounds.x),
+      y: Math.round(bounds.y),
+      width: Math.round(bounds.width),
+      height: Math.round(bounds.height),
+    },
     animations: 'disabled',
     maxDiffPixelRatio: 0.04,
   });
@@ -311,4 +319,22 @@ test('saved template settings affect new sessions and snapshots survive later ch
   await expect(page.getByText(/Templates saved/)).toBeVisible();
   const after = await records(page);
   expect(after.sessions[0].templateSnapshot?.shots[0].isRequired).toBe(false);
+});
+
+test('reference uploads reject active content even with a forged PNG type', async ({ page }) => {
+  await denyCamera(page);
+  await start(page);
+  await sample(page);
+  await page.getByLabel('Reference and camera settings').click();
+  await page
+    .getByLabel('Upload approved reference')
+    .setInputFiles({
+      name: 'forged.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg"><script>window.uploadExecuted=true</script></svg>'
+      ),
+    });
+  await expect(page.getByText(/Upload a real PNG/)).toBeVisible();
+  await expect(page.getByAltText('Trace reference boundary')).toHaveCount(0);
 });

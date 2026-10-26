@@ -8,9 +8,9 @@ Local verification on this Windows execution host. Browser results are emulation
 | npx tsc --noEmit | PASS |
 | npm run lint | PASS, 0 errors/warnings |
 | npm run format:check | PASS (baseline failed all 29 source files) |
-| npm test | PASS, 62 tests / 9 files (baseline 21 / 6) |
+| npm test | PASS, 66 tests / 10 files (baseline 21 / 6) |
 | npm run build | PASS; optional TF runtime chunk-size warning retained |
-| npm run test:e2e | PASS, 30 passed, 2 skipped, 0 failed across desktop Chrome, Pixel 7, iPhone 14 WebKit, iPad Mini WebKit |
+| npm run test:e2e | PASS, 34 passed, 2 skipped, 0 failed across desktop Chrome, Pixel 7, iPhone 14 WebKit, iPad Mini WebKit |
 | Visual regression | Four checked-in camera reference baselines; comparison run passed after baseline generation |
 | npm run test:offline | PASS Chromium + WebKit production shell reload, recovered session, decoded thumbnail, export event, no page errors |
 | Detector benchmark | Completed desktop smoke test; raw evidence and limitations in CV_EVALUATION_V2.md |
@@ -38,3 +38,5 @@ No test results establish actual lens quality, optical zoom, sensor orientation 
 Final migration guard: legacy convertibles without fitted-feature flags retain their original checklist length; only new feature-aware sessions add roof-state scenes. Regression test passed.
 
 VIN correction regression: repeated scanner frames cannot overwrite an already recognized candidate while the operator edits it. Accessible vehicle field labels remain available at phone sizes.
+
+Remote CI corrections: reference uploads are signature-checked and decoded/re-encoded to PNG before DOM preview (SVG/HTML rejected). Pixel screenshots use explicit integer CSS clipping bounds before visual comparison; the image content and 4% pixel tolerance remain tested.
