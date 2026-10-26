@@ -1,5 +1,13 @@
 import '@testing-library/jest-dom';
-
+// jsdom has no top-layer implementation. Real modal focus behavior is covered by browser tests.
+if (!HTMLDialogElement.prototype.showModal) {
+  HTMLDialogElement.prototype.showModal = function () {
+    this.setAttribute('open', '');
+  };
+  HTMLDialogElement.prototype.close = function () {
+    this.removeAttribute('open');
+  };
+}
 // Polyfill window.matchMedia for responsive tests
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -14,13 +22,11 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: () => false,
   }),
 });
-
 // Polyfill MediaStream and navigator.mediaDevices if not present in jsdom
 if (!navigator.mediaDevices) {
   // @ts-expect-error Mocking mediaDevices for test
   navigator.mediaDevices = {};
 }
-
 // Mock URL.createObjectURL and revokeObjectURL
 if (!window.URL.createObjectURL) {
   window.URL.createObjectURL = () => 'blob:mock-url';
@@ -28,7 +34,6 @@ if (!window.URL.createObjectURL) {
 if (!window.URL.revokeObjectURL) {
   window.URL.revokeObjectURL = () => {};
 }
-
 interface Mock2DContext {
   canvas: HTMLCanvasElement;
   fillStyle: string;
@@ -46,7 +51,6 @@ interface Mock2DContext {
     colorSpace: PredefinedColorSpace;
   };
 }
-
 // Mock HTMLCanvasElement.prototype.getContext for pixel testing in jsdom
 const originalGetContext = HTMLCanvasElement.prototype.getContext;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

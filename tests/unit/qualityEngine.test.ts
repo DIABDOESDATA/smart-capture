@@ -21,9 +21,9 @@ describe('Real-Time Photo Quality Engine', () => {
     lowResCanvas.height = 480;
 
     const result = analyzeImageQuality(lowResCanvas, 0, { minWidth: 1280, minHeight: 720 });
-    expect(result.warnings.some((w) => w.includes('resolution (640x480) is lower than standard'))).toBe(
-      true
-    );
+    expect(
+      result.warnings.some((w) => w.includes('resolution (640x480) is lower than standard'))
+    ).toBe(true);
   });
 
   it('detects underexposure when scene is dominated by dark pixels', () => {

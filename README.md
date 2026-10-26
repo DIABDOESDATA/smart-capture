@@ -1,90 +1,64 @@
-# Smart Capture — Automotive Photography Platform
+# Smart Capture V2
 
-[![CI](https://github.com/DIABDOESDATA/smart-capture/actions/workflows/ci.yml/badge.svg)](https://github.com/DIABDOESDATA/smart-capture/actions/workflows/ci.yml)
-[![E2E Tests](https://github.com/DIABDOESDATA/smart-capture/actions/workflows/e2e.yml/badge.svg)](https://github.com/DIABDOESDATA/smart-capture/actions/workflows/e2e.yml)
-[![Security Analysis](https://github.com/DIABDOESDATA/smart-capture/actions/workflows/security.yml/badge.svg)](https://github.com/DIABDOESDATA/smart-capture/actions/workflows/security.yml)
-[![Deploy to GitHub Pages](https://github.com/DIABDOESDATA/smart-capture/actions/workflows/deploy.yml/badge.svg)](https://github.com/DIABDOESDATA/smart-capture/actions/workflows/deploy.yml)
+Guided automotive photography for an individual or dealership studio. **Release candidate available for physical Android/iPhone acceptance at [dealercam.diabdoesdata.com](https://dealercam.diabdoesdata.com/).** The original D Drive pilot remains supported. No D Drive production system is changed.
 
-> **Consistent Vehicle Photos. Every Car. Every Time.**  
-> Smart Capture is a commercial-grade, mobile-first Progressive Web Application (PWA) designed for independent dealerships, dealer groups, and vehicle remarketers. It guides dealership staff through standardized lot photography using on-screen vehicle silhouettes, automated VIN decoding, on-device quality checks, and automated gallery syndication.
+The 2026-10-26 [release review](docs/RELEASE_REVIEW.md) adds the studio interface, mobile navigation, install guidance, safe app updates, a verified offline AI pack, native file sharing, and capture/data-loss safeguards.
 
----
+## Try it
 
-## Key Features
-
-- **Guided Smart Camera**: Proportional vector silhouettes tailored for Sedans, SUVs, Pickup Trucks, Coupes, and Convertibles. Shows exactly how to frame each required angle (hero 3/4, straight front, profiles, rears, cockpit, cluster, and details).
-- **HUD Viewfinder Controls**: Real-time opacity slider (10%–90%), high-visibility color presets (Cyan, Green, Amber, White), zoom guide (+/-20%), and rule-of-thirds grid.
-- **Hardware Horizon Level Guide**: Reads device orientation sensors to display a level indicator that illuminates green when level within `+/- 2.5 degrees`.
-- **VIN Scanner & NHTSA vPIC Decoding**: Scan windshield/door-jamb barcodes or enter 17-digit VINs. Automatically verifies check digits (ISO 3779) and fetches Year, Make, Model, and Body Style from official NHTSA public APIs.
-- **On-Device Quality Engine**: Evaluates sharpness via Discrete Laplacian variance and warns of blurry or over/underexposed shots in <25ms on-device without cloud compute costs.
-- **Offline-First Resilience**: All captured images, session drafts, and metadata persist in local IndexedDB (`smart-capture-db`). Lot staff can photograph vehicles without Wi-Fi or cellular reception and sync when reconnected.
-- **Universal Ordered ZIP & Manifest Export**: Download organized ZIP archives with standard filenames (`01_FRONT_3Q_DRIVER.jpg`), `manifest.json`, and `manifest.csv` for any DMS.
-- **D-Drive Auto Partner Adapter**: Direct integration layer syncing galleries and hero thumbnails to D-Drive Auto Photo Studio.
-- **Multi-Tenant SaaS Foundation**: Complete PostgreSQL database schema with Row Level Security (RLS) guaranteeing strict dealership isolation.
-
----
-
-## Technical Stack
-
-- **Frontend**: React 19, TypeScript 5.7, Vite 6, Tailwind CSS
-- **Icons**: Lucide React
-- **Local Storage**: IndexedDB via `idb`
-- **Packaging**: JSZip
-- **Backend / Auth / Storage**: Supabase (PostgreSQL with RLS)
-- **Vehicle Intelligence**: Official NHTSA vPIC Public API
-- **Testing**: Vitest (21/21 passing unit & component tests), Playwright (4/4 viewports passing E2E)
-- **CI/CD**: GitHub Actions (9 automated workflows)
-
----
-
-## Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/DIABDOESDATA/smart-capture.git
-cd smart-capture
-
-# Install dependencies
+```sh
 npm ci
-
-# Start local development server
-npm run dev
-
-# Run unit tests
-npm test
-
-# Run Playwright E2E tests
-npm run test:e2e
-
-# Build production bundle
-npm run build
+npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
----
+Open http://localhost:5173 on this computer. Start a vehicle session, optionally decode or scan a VIN, select a checklist, and allow camera access. Without a camera, explicitly choose **Use sample-photo mode**. Sample images are visibly marked and retain sample provenance in storage and exports.
 
-## Architecture & Documentation
+For phone testing, open **https://dealercam.diabdoesdata.com/** in Safari or Chrome. Phone cameras require a trusted **HTTPS origin**; an ordinary HTTP LAN URL is not sufficient. Hosting, DNS, updates and verification are recorded in [DEALERCAM_DEPLOYMENT.md](docs/DEALERCAM_DEPLOYMENT.md). Test the production offline shell with `npm run build`, `npm run preview -- --host 0.0.0.0`, and `npm run test:offline`.
 
-Comprehensive documentation is maintained in the [`docs/`](./docs) directory:
+## Implemented
 
-- [System Architecture](./docs/architecture.md)
-- [Product Requirements (PRD)](./docs/product-requirements.md)
-- [Product Roadmap](./docs/roadmap.md)
-- [Camera Implementation & WebRTC](./docs/camera-implementation.md)
-- [Guided Silhouette Overlays](./docs/guided-overlays.md)
-- [Device Compatibility Matrix](./docs/device-compatibility.md)
-- [Database Schema & RLS Policies](./docs/database.md)
-- [Integrations & D-Drive Adapter](./docs/integrations.md)
-- [Quality Assurance & Testing Strategy](./docs/testing.md)
-- [Deployment & CI/CD Pipelines](./docs/deployment.md)
-- [Security & Data Governance](./docs/security.md)
-- [SaaS Cost Model & Unit Economics](./docs/cost-model.md)
-- [Competitive Analysis](./docs/competitive-analysis.md)
-- [Dealership Pilot Plan](./docs/pilot-plan.md)
-- [Engineering Handoff Guide](./docs/handoff.md)
+- Original photorealistic raster ghost references for sedan, SUV/crossover, pickup, coupe, hatchback/wagon, convertible, van and classic categories, covering the eight exterior angles (opposite sides mirror generic examples). They are body-style examples, **not VIN-specific geometry or real inventory photos**.
+- Ghost/edge display, opacity, outline emphasis, X/Y position, scale, mirroring, sunlight mode, grid/landmarks, reset and saved calibrations.
+- Dealership-owned reference uploads with manual polygon isolation, original retention and per-body/per-shot approval on this device.
+- Shared preview/capture crop for 4:3, 16:9 and 1:1; native video frame resolution, no upscaling, no burned-in guides. The screen shows the actual output resolution.
+- Rear preference, exposed camera selection, capability-gated torch/zoom/exposure/touch focus, permission retry, stream cleanup and visibility recovery. Physical behavior remains to be tested on phones.
+- Real Code39, Code128 and PDF417 recognition through lazy-loaded ZXing, confirmation/correction, manual entry and NHTSA errors without fabricated vehicle specifications.
+- Saved 8/12/20/24-shot presets; D Drive 20 defaults. Session snapshots preserve checklists. Adaptive pickup cargo, rear-seat exclusion, optional fitted third-row/sunroof and convertible roof scenes. Additional steering/door/hood/console guides can be added in Templates.
+- Quality advisories, pause/resume, vehicle search/filter, large/swipe review, ordering, hero selection, retakes and before/after comparison.
+- Non-destructive center crop, rotation, straighten, brightness and contrast; originals remain separate and export with derivatives. No condition-hiding cleanup.
+- IndexedDB v1 migration to separate media and thumbnails; atomic saves and explicit failures, Blob/byte fallback for WebKit, storage usage/persistence requests, offline ZIP export and versioned manifests/hotspots.
+- Production service-worker shell and original PWA icons. No background upload claim.
 
----
+## Experimental / future / blocked
 
-## Commercial Licensing
+| Status | Feature |
+|---|---|
+| Experimental, off by default | Local COCO SSD Lite vehicle bounding-box detection. 18.56 MB model plus lazy runtime; confidence-gated guidance, manual fallback. Desktop benchmark is not a phone benchmark. |
+| Experimental pending field calibration | Quality thresholds and reference landmarks; they are advisory, not a guarantee of listing quality or exact perspective. |
+| Planned | Vehicle segmentation/mask overlap, Y/M/M-specific licensed imagery, true optical lens identification, higher-resolution still-photo path with proven preview correspondence. |
+| Planned | Dedicated dense 360 orbit sequence, interactive viewer and 3D reconstruction. A 20-shot checklist is not a smooth spin. |
+| Disabled / blocked pending backend security work | Cloud auth/sync and D Drive integration. Credentials alone cannot activate cloud access. Existing RLS needs hardening and multi-tenant tests. |
+| Human acceptance required | iOS/Android real cameras, sunlight, dark/light vehicles, dealership employee usability and time per vehicle. |
 
-Copyright (c) 2026 DIABDOESDATA / Smart Capture. All rights reserved.  
-The licensing terms for this repository are currently **PENDING** formal commercial and legal review. Unauthorized distribution, copying, or commercial exploitation is strictly prohibited without prior written permission.
+## Verification
+
+```sh
+npm run lint
+npm run format:check
+npx tsc --noEmit
+npm test
+npm run build
+npx playwright install chromium webkit
+npm run test:e2e
+npm run test:offline
+# With dev server running, optional desktop detector benchmark:
+npm run benchmark:detector
+```
+
+See [test report](docs/CODEX_TEST_REPORT.md), [audit](docs/CODEX_AUDIT_V2.md), [handoff](docs/CODEX_HANDOFF.md), [field acceptance](docs/PILOT_ACCEPTANCE_V2.md), [camera design](docs/camera-implementation.md), [reference provenance/prompts](public/references/provenance.json), [CV evaluation](docs/CV_EVALUATION_V2.md), and [future viewer contract](docs/PHOTO_STUDIO_CONTRACT_V2.md).
+
+New upstream component/model notices are in [public/notices](public/notices) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The original repository's commercial licensing remains pending in LICENSE.md; no open-source license is added to this application.
+
+### Build runtime
+
+Use Node.js 24 or newer (`.nvmrc` selects 24). The locked ZXing barcode dependency requires Node 24; all build/validation workflows use it. This is a development/build requirement; the distributed app runs in the browser.

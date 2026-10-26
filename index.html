@@ -2,17 +2,21 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2306B6D4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='m9 12 2 2 4-4'/></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0B0D11" />
+    <link rel="icon" type="image/png" href="./icon-192.png" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0c1010" />
+    <meta name="referrer" content="no-referrer" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Smart Capture" />
-    <meta name="description" content="Commercial-grade automotive photography & inventory media management with guided vehicle overlays, VIN decoding, and automated gallery organization." />
+    <meta name="description" content="Your automotive photo studio. Consistent vehicle photography with realistic guides, optional on-device AI, and organized galleries that work offline." />
     <title>Smart Capture — Guided Automotive Photography Platform</title>
   </head>
   <body class="bg-charcoal-950 text-slate-100 min-h-screen antialiased selection:bg-brand-cyan/20 selection:text-brand-cyan overflow-x-hidden">
     <div id="root"></div>
+    <noscript><p style="padding: 2rem; color: white; background: #0c1010; font: 18px system-ui">Smart Capture needs JavaScript for the camera and local photo storage. Enable JavaScript, then reload this page.</p></noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

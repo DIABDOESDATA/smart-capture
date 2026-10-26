@@ -1,3 +1,5 @@
+> Historical V1 planning document. Current implementation, disabled cloud/integrations, and unrun physical acceptance are documented in [CODEX_HANDOFF.md](CODEX_HANDOFF.md). Do not interpret historical launch or verification claims as V2 evidence.
+
 # Deployment Architecture & CI/CD Pipelines
 
 ## 1. Zero-Cost Production Hosting

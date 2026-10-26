@@ -1,193 +1,146 @@
-import React, { useState } from 'react';
-import { Download, FileArchive, Share2, CheckCircle2, Loader2, X, Car } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Download, Share2, FileArchive, Check, Loader2 } from 'lucide-react';
 import { VehicleCaptureSession } from '@/types/capture';
 import { Vehicle } from '@/types/vehicle';
-import { generateSessionZip, triggerFileDownload } from '@/services/export/zipExporter';
-import { DDriveAdapter, DDriveSyncResponse } from '@/services/integrations/ddriveAdapter';
-import confetti from 'canvas-confetti';
-
-interface ExportModalProps {
+import {
+  generateSessionZip,
+  triggerFileDownload,
+  buildManifest,
+} from '@/services/export/zipExporter';
+import { canShareFile, shareFile, safeExportName } from '@/services/export/share';
+import { Modal } from '../ui/Modal';
+interface Props {
   session: VehicleCaptureSession;
   vehicle: Partial<Vehicle>;
   isOpen: boolean;
   onClose: () => void;
 }
-
-export const ExportModal: React.FC<ExportModalProps> = ({ session, vehicle, isOpen, onClose }) => {
-  const [isGeneratingZip, setIsGeneratingZip] = useState(false);
-  const [isSyncingDDrive, setIsSyncingDDrive] = useState(false);
-  const [dDriveResult, setDDriveResult] = useState<DDriveSyncResponse | null>(null);
-
-  if (!isOpen) return null;
-
-  const handleDownloadZip = async () => {
-    setIsGeneratingZip(true);
-    try {
-      const zipBlob = await generateSessionZip(session, vehicle);
-      const filename = `${vehicle.vin || 'VEHICLE'}_${vehicle.stockNumber || 'GALLERY'}.zip`;
-      triggerFileDownload(zipBlob, filename);
-
-      confetti({
-        particleCount: 60,
-        spread: 60,
-        origin: { y: 0.7 },
+export function ExportModal({ session, vehicle, isOpen, onClose }: Props) {
+  const [file, setFile] = useState<File | null>(null),
+    [error, setError] = useState(''),
+    [retry, setRetry] = useState(0),
+    [sharing, setSharing] = useState(false),
+    [requested, setRequested] = useState(false);
+  useEffect(() => {
+    if (!isOpen || !session.shots.length) return;
+    let alive = true;
+    setFile(null);
+    setError('');
+    setRequested(false);
+    void generateSessionZip(session, vehicle)
+      .then((blob) => {
+        if (alive)
+          setFile(
+            new File(
+              [blob],
+              `${safeExportName(vehicle.vin || vehicle.stockNumber || 'VEHICLE')}_GALLERY.zip`,
+              { type: 'application/zip' }
+            )
+          );
+      })
+      .catch((e) => {
+        if (alive) setError(e instanceof Error ? e.message : 'Export could not be prepared.');
       });
-    } catch (err) {
-      console.error('ZIP generation failed:', err);
-    } finally {
-      setIsGeneratingZip(false);
-    }
-  };
-
-  const handleSyncToDDrive = async () => {
-    setIsSyncingDDrive(true);
-    try {
-      const adapter = new DDriveAdapter();
-      const res = await adapter.syncSession(session, vehicle);
-      setDDriveResult(res);
-
-      if (res.success) {
-        confetti({
-          particleCount: 80,
-          spread: 80,
-          origin: { y: 0.6 },
-        });
-      }
-    } catch (err) {
-      console.error('D-Drive sync failed:', err);
-    } finally {
-      setIsSyncingDDrive(false);
-    }
-  };
-
+    return () => {
+      alive = false;
+    };
+  }, [isOpen, session, vehicle, retry]);
+  if (!isOpen) return null;
+  const manifest = buildManifest(session, vehicle);
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="w-full max-w-lg bg-charcoal-900 border border-charcoal-750 rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between p-5 border-b border-charcoal-800">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-brand-cyan/20 text-brand-cyan">
-              <Download className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-white text-base">Export Vehicle Gallery</h3>
-              <p className="text-xs text-slate-400">
-                {session.shots.length} standardized photos ready for inventory syndication
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full bg-charcoal-800 text-slate-400 hover:text-white"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-4">
-          {/* Option 1: Standardized Ordered ZIP Download */}
-          <div className="p-4 rounded-2xl bg-charcoal-950 border border-charcoal-800 hover:border-charcoal-700 transition-all">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3">
-                <FileArchive className="w-6 h-6 text-brand-amber shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-sm text-white">
-                    Standardized Dealership ZIP Package
-                  </h4>
-                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                    Downloads an ordered archive with standardized naming (
-                    <code className="text-brand-cyan font-mono text-[11px]">
-                      01_FRONT_3Q_DRIVER.jpg
-                    </code>
-                    ), full quality images, plus{' '}
-                    <code className="text-slate-300">manifest.json</code> and{' '}
-                    <code className="text-slate-300">manifest.csv</code> for dealer DMS ingestion.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={handleDownloadZip}
-              disabled={isGeneratingZip || session.shots.length === 0}
-              className="mt-4 w-full py-2.5 px-4 rounded-xl bg-charcoal-800 hover:bg-charcoal-700 text-slate-100 font-semibold text-xs flex items-center justify-center gap-2 border border-charcoal-700 active:scale-95 transition-all disabled:opacity-40"
-            >
-              {isGeneratingZip ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-brand-amber" />
-                  Compressing & Packaging...
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4 text-brand-amber" />
-                  Download ZIP Package
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Option 2: D-Drive Auto Direct Photo Studio Sync */}
-          <div className="p-4 rounded-2xl bg-charcoal-950 border border-brand-cyan/40 hover:border-brand-cyan transition-all">
-            <div className="flex items-start gap-3">
-              <Car className="w-6 h-6 text-brand-cyan shrink-0 mt-0.5" />
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="font-semibold text-sm text-white">Sync to D-Drive Auto</h4>
-                  <span className="px-2 py-0.5 rounded-full bg-brand-cyan/20 text-brand-cyan text-[10px] font-bold">
-                    Partner Pilot
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Automatically syncs this gallery, sets the hero photo, and updates the inventory
-                  media in D-Drive Auto Photo Studio.
-                </p>
-              </div>
-            </div>
-
-            {dDriveResult && (
-              <div className="mt-3 p-3 rounded-xl bg-charcoal-850 border border-brand-cyan/30 text-xs">
-                {dDriveResult.success ? (
-                  <div className="text-hud-green flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>
-                      Successfully synced {dDriveResult.uploadedPhotoCount} photos to D-Drive Photo
-                      Studio!
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-hud-red">{dDriveResult.error}</span>
-                )}
-              </div>
-            )}
-
-            <button
-              onClick={handleSyncToDDrive}
-              disabled={isSyncingDDrive || session.shots.length === 0}
-              className="mt-4 w-full py-2.5 px-4 rounded-xl bg-brand-cyan hover:bg-cyan-400 text-charcoal-950 font-bold text-xs flex items-center justify-center gap-2 shadow-glow-cyan active:scale-95 transition-all disabled:opacity-40"
-            >
-              {isSyncingDDrive ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Connecting to D-Drive Photo Studio...
-                </>
-              ) : (
-                <>
-                  <Share2 className="w-4 h-4" />
-                  Sync to D-Drive Photo Studio
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        <div className="px-6 py-4 bg-charcoal-950 border-t border-charcoal-800 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-charcoal-800 hover:bg-charcoal-700 text-slate-300 font-medium text-xs transition-colors"
-          >
-            Close
-          </button>
+    <Modal
+      open={isOpen}
+      title="Export Vehicle Gallery"
+      closeLabel="Close export"
+      onClose={onClose}
+      busy={sharing}
+    >
+      <div className="export-summary">
+        <span className="section-icon">
+          <FileArchive size={25} />
+        </span>
+        <div>
+          <h3>{session.shots.length} photos. One complete package.</h3>
+          <p>Gallery order, original files for edited images, and JSON / CSV metadata.</p>
         </div>
       </div>
-    </div>
+      {manifest.missingRequired && manifest.missingRequired.length > 0 && (
+        <p className="warning">
+          Incomplete checklist: {manifest.missingRequired.length} required shots missing. This
+          export remains labeled incomplete.
+        </p>
+      )}
+      {manifest.containsSampleMedia && (
+        <p className="warning">
+          Contains SAMPLE media. Do not use this gallery as real inventory photography.
+        </p>
+      )}
+      {manifest.containsUnverifiedLegacyMedia && (
+        <p className="warning">Legacy photo source is unknown. Review before publishing.</p>
+      )}
+      <div className="export-readiness" role="status">
+        {file ? (
+          <>
+            <Check size={18} />
+            Ready · {(file.size / 1048576).toFixed(1)} MB
+          </>
+        ) : error ? (
+          'Export needs attention'
+        ) : session.shots.length ? (
+          <>
+            <Loader2 size={18} className="animate-spin" />
+            Preparing gallery on this device…
+          </>
+        ) : (
+          'Capture a photo before exporting.'
+        )}
+      </div>
+      <button
+        className="primary w-full"
+        disabled={!file || sharing}
+        onClick={() => {
+          if (file) {
+            triggerFileDownload(file, file.name);
+            setRequested(true);
+          }
+        }}
+      >
+        <Download size={18} />
+        Download ZIP Package
+      </button>
+      {file && canShareFile(file) && (
+        <button
+          className="secondary w-full mt-3"
+          disabled={sharing}
+          onClick={() => {
+            setSharing(true);
+            void shareFile(file)
+              .catch((e) => {
+                if (!(e instanceof Error && e.name === 'AbortError'))
+                  setError('Sharing could not finish. Use Download ZIP Package instead.');
+              })
+              .finally(() => setSharing(false));
+          }}
+        >
+          <Share2 size={18} />
+          {sharing ? 'Sharing…' : 'Share gallery…'}
+        </button>
+      )}
+      {requested && (
+        <p className="dialog-copy" role="status">
+          Download requested. Check your browser’s downloads or Files app before removing any local
+          photos.
+        </p>
+      )}
+      {error && (
+        <div role="alert">
+          <p className="warning">{error}</p>
+          <button className="secondary" onClick={() => setRetry((n) => n + 1)}>
+            Prepare export again
+          </button>
+        </div>
+      )}
+      <p className="dialog-copy">Works offline. No photos are uploaded to a server.</p>
+    </Modal>
   );
-};
+}

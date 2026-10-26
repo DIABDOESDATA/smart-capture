@@ -93,7 +93,7 @@ describe('ZIP Exporter & Manifest Engine', () => {
     // Verify manifest.json structure
     const manifestJsonText = await zip.file('manifest.json')?.async('text');
     const manifest = JSON.parse(manifestJsonText || '{}');
-    expect(manifest.version).toBe('1.0');
+    expect(manifest.version).toBe('2.0');
     expect(manifest.vehicle.vin).toBe('1HGCR2F83HA000000');
     expect(manifest.heroShotCode).toBe('FRONT_3Q_DRIVER');
     expect(manifest.totalPhotos).toBe(2);

@@ -13,7 +13,7 @@ describe('NHTSA vPIC Decoder & Body Style Inference', () => {
     expect(mapNhtsaToBodyStyle('Hatchback', '')).toBe('hatchback');
     expect(mapNhtsaToBodyStyle('Station Wagon', '')).toBe('wagon');
     expect(mapNhtsaToBodyStyle('Sedan', 'Passenger Car')).toBe('sedan');
-    expect(mapNhtsaToBodyStyle('', '')).toBe('sedan');
+    expect(mapNhtsaToBodyStyle('', '')).toBe('other');
   });
 
   it('fetches and parses decoded vehicle fields from NHTSA vPIC response', async () => {
@@ -55,6 +55,6 @@ describe('NHTSA vPIC Decoder & Body Style Inference', () => {
     const result = await decodeVinWithNhtsa('1HGCR2F83HA000000');
     expect(result.errorCode).toBe('NETWORK_ERROR');
     expect(result.errorText).toContain('Network offline');
-    expect(result.suggestedBodyStyle).toBe('sedan');
+    expect(result.suggestedBodyStyle).toBe('other');
   });
 });

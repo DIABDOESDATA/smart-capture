@@ -17,7 +17,8 @@ permissions:
 jobs:
   responsive-matrix:
     name: Mobile, Tablet & Foldable Viewports
-    runs-on: ubuntu-latest
+    # Pin the browser environment instead of following runner OS migrations.
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
 
     steps:
@@ -27,7 +28,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: 'npm'
 
       - name: Install dependencies
@@ -42,7 +43,7 @@ jobs:
           CI: true
 
       - name: Upload responsive test artifacts
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: responsive-test-results

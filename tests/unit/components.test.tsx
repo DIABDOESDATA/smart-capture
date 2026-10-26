@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { OverlayControls } from '@/components/camera/overlays/OverlayControls';
 import { QualityWarningBanner } from '@/components/camera/QualityWarningBanner';
 import { VinLookupForm } from '@/components/vehicle/VinLookupForm';
@@ -26,7 +26,7 @@ describe('Smart Capture Component Suite', () => {
       />
     );
 
-    expect(screen.getByText('HUD Overlay Controls')).toBeInTheDocument();
+    expect(screen.getByText('Reference & camera')).toBeInTheDocument();
 
     // Toggle outline
     const outlineBtn = screen.getByRole('button', { name: /Outline/i });
@@ -72,7 +72,7 @@ describe('Smart Capture Component Suite', () => {
     expect(handleKeep).toHaveBeenCalledTimes(1);
   });
 
-  it('renders VinLookupForm and allows vehicle manual creation', () => {
+  it('renders VinLookupForm and allows vehicle manual creation', async () => {
     const handleVehicleSelected = vi.fn();
     const handleOpenScanner = vi.fn();
 
@@ -89,7 +89,7 @@ describe('Smart Capture Component Suite', () => {
     const submitBtn = screen.getByRole('button', { name: /Start Guided Capture Session/i });
     fireEvent.click(submitBtn);
 
-    expect(handleVehicleSelected).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(handleVehicleSelected).toHaveBeenCalledTimes(1));
     expect(handleVehicleSelected).toHaveBeenCalledWith(
       expect.objectContaining({
         dealershipId: 'dealership-ddrive-01',
