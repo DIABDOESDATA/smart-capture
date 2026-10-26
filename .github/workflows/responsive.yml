@@ -42,7 +42,7 @@ jobs:
           CI: true
 
       - name: Upload responsive test artifacts
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: responsive-test-results

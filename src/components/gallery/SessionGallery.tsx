@@ -7,6 +7,8 @@ import { getPhotoBlob, getMediaBlob } from '@/services/storage/indexedDb';
 import { triggerFileDownload } from '@/services/export/zipExporter';
 import { ExportModal } from './ExportModal';
 import { PhotoEditor } from './PhotoEditor';
+import { Modal } from '../ui/Modal';
+import { canShareFile, shareFile } from '@/services/export/share';
 interface Props {
   session: VehicleCaptureSession;
   template: CaptureTemplate;
@@ -30,11 +32,29 @@ export function SessionGallery({
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [previous, setPrevious] = useState(''),
-    [editing, setEditing] = useState(false);
+    [editing, setEditing] = useState(false),
+    [editorBusy, setEditorBusy] = useState(false),
+    [selectedFile, setSelectedFile] = useState<File | null>(null);
   const touch = useRef(0);
   const sorted = [...session.shots].sort((a, b) => a.sequenceOrder - b.sequenceOrder),
     selected = sorted.find((s) => s.shotId === selectedId),
     missing = missingRequired(template, session.shots);
+  useEffect(() => {
+    let live = true;
+    setSelectedFile(null);
+    if (selected)
+      void getPhotoBlob(selected)
+        .then((blob) => {
+          if (live)
+            setSelectedFile(new File([blob], `${selected.shotCode}.jpg`, { type: 'image/jpeg' }));
+        })
+        .catch(() => {
+          if (live) setError('Photo could not be prepared for download. Reopen it to retry.');
+        });
+    return () => {
+      live = false;
+    };
+  }, [selected]);
   useEffect(() => {
     let live = true,
       u = '';
@@ -112,7 +132,9 @@ export function SessionGallery({
               {template.name}
             </p>
           </div>
-          <button onClick={onResume}>Resume next missing shot</button>
+          <button onClick={onResume}>
+            {missing.length ? 'Resume next missing shot' : 'Review capture angles'}
+          </button>
         </section>
         {session.shots.some((s) => s.source === 'sample') && (
           <p className="warning">SAMPLE gallery — contains generated test photographs.</p>
@@ -187,110 +209,113 @@ export function SessionGallery({
         </div>
       </main>
       {selected && (
-        <div className="modal-backdrop">
-          <section
-            className="panel lightbox"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Photo review"
-          >
-            <header>
-              <h2>{selected.shotName}</h2>
-              <button
-                aria-label="Close photo review"
-                onClick={() => {
-                  setSelectedId(null);
-                  setEditing(false);
+        <Modal
+          open={!!selected}
+          title={selected.shotName}
+          closeLabel="Close photo review"
+          className="photo-review-dialog"
+          busy={busy || editorBusy}
+          onClose={() => {
+            setSelectedId(null);
+            setEditing(false);
+          }}
+        >
+          {error && (
+            <p role="alert" className="warning">
+              {error}
+            </p>
+          )}
+          {editing ? (
+            <PhotoEditor
+              shot={selected}
+              onBusyChange={setEditorBusy}
+              onCancel={() => setEditing(false)}
+              onSaved={async (s) => {
+                await update(sorted.map((p) => (p.shotId === s.shotId ? s : p)));
+                setEditing(false);
+              }}
+            />
+          ) : (
+            <>
+              <img
+                className="review-image"
+                src={selected.imageDataUrl}
+                alt={selected.shotName}
+                onTouchStart={(e) => {
+                  touch.current = e.touches[0].clientX;
                 }}
-              >
-                ×
-              </button>
-            </header>
-            {editing ? (
-              <PhotoEditor
-                shot={selected}
-                onCancel={() => setEditing(false)}
-                onSaved={async (s) => {
-                  await update(sorted.map((p) => (p.shotId === s.shotId ? s : p)));
-                  setEditing(false);
+                onTouchEnd={(e) => {
+                  const dx = e.changedTouches[0].clientX - touch.current;
+                  if (Math.abs(dx) > 45) navigate(dx < 0 ? 1 : -1);
                 }}
               />
-            ) : (
-              <>
-                <img
-                  className="review-image"
-                  src={selected.imageDataUrl}
-                  alt={selected.shotName}
-                  onTouchStart={(e) => {
-                    touch.current = e.touches[0].clientX;
-                  }}
-                  onTouchEnd={(e) => {
-                    const dx = e.changedTouches[0].clientX - touch.current;
-                    if (Math.abs(dx) > 45) navigate(dx < 0 ? 1 : -1);
-                  }}
-                />
-                <div className="toggle-row">
-                  <button aria-label="Previous photo" onClick={() => navigate(-1)}>
-                    ← Previous
-                  </button>
-                  <button aria-label="Next photo" onClick={() => navigate(1)}>
-                    Next →
-                  </button>
-                </div>
-                <p>
-                  {new Date(selected.capturedAt).toLocaleString()} · {selected.quality.width} ×{' '}
-                  {selected.quality.height} · Horizon{' '}
-                  {selected.quality.tiltDegrees === null
-                    ? 'unavailable'
-                    : `${selected.quality.tiltDegrees}°`}{' '}
-                  · Source {selected.source || 'legacy unknown'}
+              <div className="toggle-row">
+                <button aria-label="Previous photo" onClick={() => navigate(-1)}>
+                  ← Previous
+                </button>
+                <button aria-label="Next photo" onClick={() => navigate(1)}>
+                  Next →
+                </button>
+              </div>
+              <p>
+                {new Date(selected.capturedAt).toLocaleString()} · {selected.quality.width} ×{' '}
+                {selected.quality.height} · Horizon{' '}
+                {selected.quality.tiltDegrees === null
+                  ? 'unavailable'
+                  : `${selected.quality.tiltDegrees}°`}{' '}
+                · Source {selected.source || 'legacy unknown'}
+              </p>
+              <p>
+                Sharpness {selected.quality.blurScore} · Exposure {selected.quality.exposure}
+              </p>
+              {selected.quality.warnings.map((w) => (
+                <p className="warning" key={w}>
+                  {w}
                 </p>
-                <p>
-                  Sharpness {selected.quality.blurScore} · Exposure {selected.quality.exposure}
-                </p>
-                {selected.quality.warnings.map((w) => (
-                  <p className="warning" key={w}>
-                    {w}
-                  </p>
-                ))}
-                {previous && (
-                  <details>
-                    <summary>Before / after retake comparison</summary>
-                    <div className="comparison-pair">
-                      <img src={previous} alt="Previous capture" />
-                      <img src={selected.imageDataUrl} alt="Current capture" />
-                    </div>
-                  </details>
-                )}
-                <div className="toggle-row">
+              ))}
+              {previous && (
+                <details>
+                  <summary>Before / after retake comparison</summary>
+                  <div className="comparison-pair">
+                    <img src={previous} alt="Previous capture" />
+                    <img src={selected.imageDataUrl} alt="Current capture" />
+                  </div>
+                </details>
+              )}
+              <div className="toggle-row">
+                <button
+                  onClick={() => {
+                    setSelectedId(null);
+                    onRetakeShot(template.shots.findIndex((s) => s.code === selected.shotCode));
+                  }}
+                >
+                  Retake This Photo
+                </button>
+                <button onClick={() => setEditing(true)}>Adjust photo</button>
+                <button
+                  disabled={!selectedFile}
+                  onClick={() => {
+                    if (selectedFile) triggerFileDownload(selectedFile, selectedFile.name);
+                  }}
+                >
+                  Download photo
+                </button>
+                {selectedFile && canShareFile(selectedFile) && (
                   <button
                     onClick={() => {
-                      setSelectedId(null);
-                      onRetakeShot(template.shots.findIndex((s) => s.code === selected.shotCode));
+                      void shareFile(selectedFile).catch((e) => {
+                        if (!(e instanceof Error && e.name === 'AbortError'))
+                          setError('Sharing did not finish. Download the photo instead.');
+                      });
                     }}
                   >
-                    Retake This Photo
+                    Share photo…
                   </button>
-                  <button onClick={() => setEditing(true)}>Adjust photo</button>
-                  <button
-                    onClick={async () => {
-                      try {
-                        triggerFileDownload(
-                          await getPhotoBlob(selected),
-                          `${selected.shotCode}.jpg`
-                        );
-                      } catch (e) {
-                        setError(String(e));
-                      }
-                    }}
-                  >
-                    Download photo
-                  </button>
-                </div>
-              </>
-            )}
-          </section>
-        </div>
+                )}
+              </div>
+            </>
+          )}
+        </Modal>
       )}
       <ExportModal
         session={session}

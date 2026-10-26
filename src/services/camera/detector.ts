@@ -22,6 +22,7 @@ export interface DetectorBenchmark {
 export class CocoVehicleDetector implements Detector {
   id = 'coco-ssd-lite-mobilenet-v2';
   private model: import('@tensorflow-models/coco-ssd').ObjectDetection | null = null;
+  private disposed = false;
   benchmark: DetectorBenchmark = { loadMs: 0, inferenceMs: [] };
   async load() {
     const start = performance.now();
@@ -29,16 +30,21 @@ export class CocoVehicleDetector implements Detector {
     await import('@tensorflow/tfjs-backend-webgl');
     await import('@tensorflow/tfjs-backend-cpu');
     try {
-      await tf.setBackend('webgl');
+      if (!(await tf.setBackend('webgl'))) await tf.setBackend('cpu');
     } catch {
       await tf.setBackend('cpu');
     }
     await tf.ready();
     const coco = await import('@tensorflow-models/coco-ssd');
-    this.model = await coco.load({
+    const model = await coco.load({
       base: 'lite_mobilenet_v2',
       modelUrl: `${import.meta.env.BASE_URL}models/vehicle/model.json`,
     });
+    if (this.disposed) {
+      model.dispose();
+      throw new Error('Detector was closed during loading.');
+    }
+    this.model = model;
     this.benchmark.loadMs = performance.now() - start;
     this.benchmark.tensorBytes = tf.memory().numBytes;
     this.benchmark.backend = tf.getBackend();
@@ -67,6 +73,7 @@ export class CocoVehicleDetector implements Detector {
     };
   }
   dispose() {
+    this.disposed = true;
     this.model?.dispose();
     this.model = null;
   }

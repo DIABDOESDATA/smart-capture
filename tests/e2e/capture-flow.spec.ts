@@ -84,7 +84,7 @@ test('full premium sample checklist persists, resumes and exports 20 ordered ima
   await expect(page.getByText('Capture Progress')).toBeVisible();
   await page.screenshot({ path: info.outputPath('gallery-partial.png'), fullPage: true });
   await page.reload();
-  await page.getByRole('button', { name: /PILOT-001/ }).click();
+  await page.locator('.session-row').filter({ hasText: 'PILOT-001' }).click();
   await page.getByRole('button', { name: 'Resume next missing shot' }).click();
   await expect(page.getByText(/SHOT 2 OF 20/i)).toBeVisible();
   await sample(page);
@@ -301,19 +301,19 @@ test('saved template settings affect new sessions and snapshots survive later ch
 }) => {
   await denyCamera(page);
   await page.goto('/');
-  await page.getByLabel('Dealership Templates').click();
+  await page.getByRole('button', { name: 'Dealership Templates' }).click();
   await page.getByLabel('Template aspect ratio').selectOption('16:9');
   await page.getByRole('button', { name: 'Required', exact: true }).first().click();
   await page.getByRole('button', { name: 'Save templates', exact: true }).click();
   await expect(page.getByText(/Templates saved/)).toBeVisible();
-  await page.getByRole('button', { name: 'SMART CAPTURE', exact: false }).click();
+  await page.getByRole('button', { name: 'Smart Capture home', exact: false }).click();
   await start(page);
   const r = await records(page);
   expect(r.sessions[0].templateSnapshot?.aspectRatio).toBe('16:9');
   expect(r.sessions[0].templateSnapshot?.shots[0].isRequired).toBe(false);
   await page.getByLabel('Pause and review gallery').click();
   await page.getByRole('button', { name: '← Sessions' }).click();
-  await page.getByLabel('Dealership Templates').click();
+  await page.getByRole('button', { name: 'Dealership Templates' }).click();
   await page.getByRole('button', { name: 'Optional', exact: true }).first().click();
   await page.getByRole('button', { name: 'Save templates', exact: true }).click();
   await expect(page.getByText(/Templates saved/)).toBeVisible();

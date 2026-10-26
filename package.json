@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Smart Capture \u2014 guided automotive photography and inventory media management for dealerships.",
+  "description": "Smart Capture — guided automotive photography and inventory media management for dealerships.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -38,6 +38,7 @@
     "tailwind-merge": "^3.0.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@playwright/test": "^1.51.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",

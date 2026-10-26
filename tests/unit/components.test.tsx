@@ -26,7 +26,7 @@ describe('Smart Capture Component Suite', () => {
       />
     );
 
-    expect(screen.getByText('HUD Overlay Controls')).toBeInTheDocument();
+    expect(screen.getByText('Reference & camera')).toBeInTheDocument();
 
     // Toggle outline
     const outlineBtn = screen.getByRole('button', { name: /Outline/i });

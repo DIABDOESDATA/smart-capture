@@ -6,24 +6,34 @@ export function PhotoEditor({
   shot,
   onSaved,
   onCancel,
+  onBusyChange,
 }: {
   shot: CapturedShot;
   onSaved: (s: CapturedShot) => Promise<void>;
   onCancel: () => void;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const [edits, setEdits] = useState(shot.edits || DEFAULT_EDITS),
     [original, setOriginal] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
   useEffect(() => {
+    onBusyChange?.(busy);
+    return () => onBusyChange?.(false);
+  }, [busy, onBusyChange]);
+  useEffect(() => {
     let alive = true,
       u = '';
-    void getPhotoBlob(shot, true).then((b) => {
-      if (alive) {
-        u = URL.createObjectURL(b);
-        setOriginal(u);
-      }
-    });
+    void getPhotoBlob(shot, true)
+      .then((b) => {
+        if (alive) {
+          u = URL.createObjectURL(b);
+          setOriginal(u);
+        }
+      })
+      .catch(() => {
+        if (alive) setError('Original photo could not load. Close and reopen this photo to retry.');
+      });
     return () => {
       alive = false;
       if (u) URL.revokeObjectURL(u);

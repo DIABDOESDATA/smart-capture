@@ -1,6 +1,8 @@
 # Smart Capture V2
 
-Standalone guided automotive photography pilot for D Drive Auto. **Ready for supervised pilot review; physical-device and dealership acceptance are still required. This is not a production-readiness claim.** No D Drive application, API, database or deployment is changed.
+Guided automotive photography for an individual or dealership studio. **Public-release candidate under review; physical Android/iPhone acceptance and an approved HTTPS release host are still required.** The original D Drive pilot remains supported. No D Drive production system is changed.
+
+The 2026-10-26 [release review](docs/RELEASE_REVIEW.md) adds the studio interface, mobile navigation, install guidance, safe app updates, a verified offline AI pack, native file sharing, and capture/data-loss safeguards.
 
 ## Try it
 

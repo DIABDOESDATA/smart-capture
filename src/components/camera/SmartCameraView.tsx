@@ -11,6 +11,8 @@ import {
   X,
   SwitchCamera,
   Zap,
+  Sparkles,
+  Eye,
 } from 'lucide-react';
 import { CaptureTemplate } from '@/types/template';
 import { BodyStyle } from '@/types/vehicle';
@@ -38,6 +40,7 @@ import { getSetting, putSetting, storageError } from '@/services/storage/indexed
 import { nextMissing } from '@/services/capture/sequence';
 import { DEFAULT_STANDARD } from '@/services/standards';
 import { CocoVehicleDetector, alignment, VehicleDetection } from '@/services/camera/detector';
+import { Modal } from '../ui/Modal';
 interface Props {
   template: CaptureTemplate;
   bodyStyle: BodyStyle;
@@ -48,6 +51,7 @@ interface Props {
   onCaptureShot: (s: CapturedShot) => Promise<void> | void;
   onFinishSession: () => Promise<void> | void;
   onClose: () => Promise<void> | void;
+  initialAiEnabled?: boolean;
 }
 export function SmartCameraView({
   template,
@@ -59,6 +63,7 @@ export function SmartCameraView({
   onCaptureShot,
   onFinishSession,
   onClose,
+  initialAiEnabled = false,
 }: Props) {
   const [index, setIndex] = useState(initialShotIndex),
     [ratio, setRatio] = useState<AspectRatio>(template.aspectRatio),
@@ -80,7 +85,9 @@ export function SmartCameraView({
     [resolution, setResolution] = useState(''),
     [reference, setReference] = useState<ReferenceAsset | null>(null),
     [refRevision, setRefRevision] = useState(0),
-    [cv, setCv] = useState(false),
+    [cv, setCv] = useState(initialAiEnabled),
+    [exitReview, setExitReview] = useState(false),
+    [savedNotice, setSavedNotice] = useState(''),
     [cvStatus, setCvStatus] = useState('Manual alignment'),
     [detection, setDetection] = useState<VehicleDetection | null>(null),
     [focusPoint, setFocusPoint] = useState<[number, number] | null>(null),
@@ -89,8 +96,44 @@ export function SmartCameraView({
     viewport = useRef<HTMLDivElement>(null),
     controller = useRef(new CameraController()),
     lock = useRef(false),
-    sampleImage = useRef<HTMLImageElement | null>(null);
+    sampleImage = useRef<HTMLImageElement | null>(null),
+    detectionTime = useRef(0);
   const shot = template.shots[index] || template.shots[0];
+  const inferenceContext = useRef({
+    key: `${shot.code}:${ratio}`,
+    ratio,
+    paused: !!pending || open,
+  });
+  inferenceContext.current = { key: `${shot.code}:${ratio}`, ratio, paused: !!pending || open };
+  useEffect(() => {
+    setDetection(null);
+    detectionTime.current = 0;
+  }, [shot.code, ratio, pending, open]);
+  useEffect(() => {
+    if (!pending && !busy) return;
+    const protect = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', protect);
+    return () => window.removeEventListener('beforeunload', protect);
+  }, [pending, busy]);
+  useEffect(() => {
+    if (!active || sample || !('wakeLock' in navigator)) return;
+    let lock: WakeLockSentinel | undefined,
+      alive = true;
+    void navigator.wakeLock
+      .request('screen')
+      .then((value) => {
+        if (alive) lock = value;
+        else void value.release();
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+      void lock?.release();
+    };
+  }, [active, sample]);
   const key = `calibration:${dealershipId}:${bodyStyle}:${shot.code}`;
   useEffect(() => {
     let live = true;
@@ -138,12 +181,24 @@ export function SmartCameraView({
       }
       if (generation !== cameraGeneration.current) return;
       setCaps(controller.current.capabilities);
-      const d = await navigator.mediaDevices.enumerateDevices();
-      setDevices(d.filter((x) => x.kind === 'videoinput'));
+      const actual = controller.current.track?.getSettings() as MediaTrackSettings & {
+        zoom?: number;
+        exposureCompensation?: number;
+      };
+      setZoom(actual?.zoom ?? 1);
+      setExposure(actual?.exposureCompensation ?? 0);
+      try {
+        const d = await navigator.mediaDevices.enumerateDevices();
+        if (generation === cameraGeneration.current)
+          setDevices(d.filter((x) => x.kind === 'videoinput'));
+      } catch {
+        setDevices([]);
+      }
       if (generation !== cameraGeneration.current) return;
       setActive(true);
     } catch (e) {
       if (generation !== cameraGeneration.current) return;
+      controller.current.stop();
       setError(
         `Camera unavailable. Allow camera access in browser settings, then retry. ${e instanceof Error ? e.message : ''}`
       );
@@ -237,8 +292,9 @@ export function SmartCameraView({
   const target = referenceGeometry(reference, ratio, standard, settings).target;
   const result = alignment(detection, target, tilt);
   useEffect(() => {
+    setDetection(null);
+    detectionTime.current = 0;
     if (!cv || !active || sample || shot.category !== 'exterior') {
-      setDetection(null);
       return;
     }
     let alive = true;
@@ -255,9 +311,10 @@ export function SmartCameraView({
         const tick = async () => {
           if (!alive || document.hidden) return;
           try {
-            if (video.current?.videoWidth) {
+            const context = inferenceContext.current;
+            if (video.current?.videoWidth && !context.paused) {
               const v = video.current;
-              const crop = coverCrop(v.videoWidth, v.videoHeight, ratio);
+              const crop = coverCrop(v.videoWidth, v.videoHeight, context.ratio);
               const small = document.createElement('canvas');
               small.width = 320;
               small.height = Math.round((320 * crop.height) / crop.width);
@@ -275,10 +332,19 @@ export function SmartCameraView({
                   small.height
                 );
               const d = await detector.detect(small);
-              if (alive) {
+              if (
+                alive &&
+                inferenceContext.current.key === context.key &&
+                !inferenceContext.current.paused
+              ) {
                 setDetection(d);
+                detectionTime.current = performance.now();
                 const ms = detector.benchmark.inferenceMs.at(-1) || 0;
-                setCvStatus(`Experimental • ${Math.round(ms)} ms / frame`);
+                setCvStatus(
+                  d && d.confidence >= 0.65
+                    ? `AI guidance · ${Math.round(ms)} ms`
+                    : 'AI is looking · align with the reference'
+                );
               }
             }
           } catch {
@@ -302,7 +368,7 @@ export function SmartCameraView({
       clearTimeout(timer);
       detector.dispose();
     };
-  }, [cv, active, sample, ratio, shot.category]);
+  }, [cv, active, sample, shot.category]);
   const constrain = async (values: Record<string, unknown>) => {
     try {
       await controller.current.constrain(values);
@@ -317,6 +383,13 @@ export function SmartCameraView({
     lock.current = true;
     setBusy(true);
     setError('');
+    const measuredAlignment =
+      cv &&
+      !sample &&
+      shot.category === 'exterior' &&
+      performance.now() - detectionTime.current < 1800
+        ? result
+        : { available: false as const };
     try {
       let source: CanvasImageSource, width: number, height: number;
       if (sample) {
@@ -394,13 +467,13 @@ export function SmartCameraView({
           interiorSceneId: shot.category === 'interior' ? shot.code : undefined,
           panelState,
           alignment:
-            !sample && result.available && detection
+            measuredAlignment.available && detection
               ? {
-                  score: result.score,
+                  score: measuredAlignment.score,
                   confidence: detection.confidence,
                   provider: 'coco-ssd-lite-mobilenet-v2',
-                  centerDeviation: result.centerDeviation,
-                  coverageDeviation: result.coverageDeviation,
+                  centerDeviation: measuredAlignment.centerDeviation,
+                  coverageDeviation: measuredAlignment.coverageDeviation,
                 }
               : undefined,
         },
@@ -414,7 +487,7 @@ export function SmartCameraView({
     }
   };
   const keep = async () => {
-    if (!pending || lock.current) return;
+    if (!pending || lock.current) return false;
     lock.current = true;
     setBusy(true);
     try {
@@ -424,8 +497,11 @@ export function SmartCameraView({
       setPending(null);
       setIndex(nextMissing(template, captured, (index + 1) % template.shots.length));
       setError('');
+      setSavedNotice(`${pending.shotName} saved`);
+      return true;
     } catch (e) {
       setError(storageError(e));
+      return false;
     } finally {
       lock.current = false;
       setBusy(false);
@@ -437,7 +513,8 @@ export function SmartCameraView({
         <button
           aria-label="Pause and review gallery"
           onClick={() => {
-            void Promise.resolve(onClose()).catch((e) => setError(storageError(e)));
+            if (pending) setExitReview(true);
+            else void Promise.resolve(onClose()).catch((e) => setError(storageError(e)));
           }}
           disabled={busy}
         >
@@ -453,114 +530,134 @@ export function SmartCameraView({
           <SlidersHorizontal size={22} />
         </button>
       </header>
+      <div
+        className="shot-strip"
+        aria-label={`${existingShots.length} of ${template.shots.length} photos saved`}
+      >
+        {template.shots.map((item, i) => (
+          <span
+            key={item.code}
+            className={`${existingShots.some((s) => s.shotCode === item.code) ? 'saved' : ''} ${i === index ? 'current' : ''}`}
+          />
+        ))}
+      </div>
       <main className="camera-stage">
         <div
-          ref={viewport}
-          className="viewfinder"
-          style={{ aspectRatio: ratio.replace(':', '/') }}
-          onPointerDown={async (e) => {
-            if (!active || pending) return;
-            if (!caps.focusMode?.includes('single-shot') || !('pointsOfInterest' in caps)) return;
-            const r = e.currentTarget.getBoundingClientRect();
-            const p: [number, number] = [
-              (e.clientX - r.left) / r.width,
-              (e.clientY - r.top) / r.height,
-            ];
-            if (
-              await constrain({
-                focusMode: 'single-shot',
-                pointsOfInterest: [
-                  (() => {
-                    const v = video.current!;
-                    const crop = coverCrop(v.videoWidth, v.videoHeight, ratio);
-                    return {
-                      x: (crop.x + p[0] * crop.width) / v.videoWidth,
-                      y: (crop.y + p[1] * crop.height) / v.videoHeight,
-                    };
-                  })(),
-                ],
-              })
-            ) {
-              setFocusPoint(p);
-              setTimeout(() => setFocusPoint(null), 1000);
-            }
-          }}
+          className="viewfinder-space"
+          style={
+            {
+              '--frame-ratio': Number(ratio.split(':')[0]) / Number(ratio.split(':')[1]),
+            } as React.CSSProperties
+          }
         >
-          <video
-            ref={video}
-            playsInline
-            autoPlay
-            muted
-            className={`live-video ${active && !sample ? '' : 'invisible'}`}
-            onLoadedMetadata={() => {
-              if (video.current) {
-                const { canvas } = captureFrame(
-                  video.current,
-                  video.current.videoWidth,
-                  video.current.videoHeight,
-                  ratio
-                );
-                setResolution(`${canvas.width} × ${canvas.height}`);
+          <div
+            ref={viewport}
+            className="viewfinder"
+            style={{ aspectRatio: ratio.replace(':', '/') }}
+            onPointerDown={async (e) => {
+              if (!active || pending) return;
+              if (!caps.focusMode?.includes('single-shot') || !('pointsOfInterest' in caps)) return;
+              const r = e.currentTarget.getBoundingClientRect();
+              const p: [number, number] = [
+                (e.clientX - r.left) / r.width,
+                (e.clientY - r.top) / r.height,
+              ];
+              if (
+                await constrain({
+                  focusMode: 'single-shot',
+                  pointsOfInterest: [
+                    (() => {
+                      const v = video.current!;
+                      const crop = coverCrop(v.videoWidth, v.videoHeight, ratio);
+                      return {
+                        x: (crop.x + p[0] * crop.width) / v.videoWidth,
+                        y: (crop.y + p[1] * crop.height) / v.videoHeight,
+                      };
+                    })(),
+                  ],
+                })
+              ) {
+                setFocusPoint(p);
+                setTimeout(() => setFocusPoint(null), 1000);
               }
             }}
-          />
-          {sample && (
-            <div className="sample-scene">
-              <span>SAMPLE · Camera is off</span>
-            </div>
-          )}
-          {!active && !sample && (
-            <div className="camera-unavailable">
-              <Camera size={32} />
-              <h2>Camera access needed</h2>
-              <p>
-                Allow rear-camera access or explore the workflow with clearly labeled sample images.
-              </p>
-              <button onClick={() => setRetry((n) => n + 1)}>Retry camera</button>
-              <button onClick={() => setSample(true)}>Use sample-photo mode</button>
-            </div>
-          )}
-          {!pending && (active || sample) && (
-            <>
-              {settings.showGrid && <div className="thirds-grid" />}
-              {settings.isVisible && (
-                <ReferenceOverlay
-                  asset={reference}
-                  shot={shot}
-                  body={bodyStyle}
-                  settings={settings}
-                  ratio={ratio}
-                  standard={standard}
-                />
-              )}
-              <div className="frame-badge">
-                {ratio} · {sample ? 'Sample reference' : resolution || 'Waiting for frame'}
+          >
+            <video
+              ref={video}
+              playsInline
+              autoPlay
+              muted
+              className={`live-video ${active && !sample ? '' : 'invisible'}`}
+              onLoadedMetadata={() => {
+                if (video.current?.videoWidth && video.current.videoHeight) {
+                  const crop = coverCrop(
+                    video.current.videoWidth,
+                    video.current.videoHeight,
+                    ratio
+                  );
+                  setResolution(`${Math.floor(crop.width)} × ${Math.floor(crop.height)}`);
+                }
+              }}
+            />
+            {sample && (
+              <div className="sample-scene">
+                <span>SAMPLE · Camera is off</span>
               </div>
-              {settings.showHorizon && (
-                <div
-                  className={`horizon ${tilt !== null && Math.abs(tilt) <= 2.5 ? 'level' : ''}`}
-                  style={{ transform: `rotate(${tilt || 0}deg)` }}
-                >
-                  <span>
-                    {tilt === null
-                      ? 'Horizon sensor unavailable'
-                      : Math.abs(tilt) <= 2.5
-                        ? 'LEVEL'
-                        : `${tilt.toFixed(1)}°`}
-                  </span>
+            )}
+            {!active && !sample && (
+              <div className="camera-unavailable">
+                <Camera size={32} />
+                <h2>Camera access needed</h2>
+                <p>
+                  Allow rear-camera access or explore the workflow with clearly labeled sample
+                  images.
+                </p>
+                <button onClick={() => setRetry((n) => n + 1)}>Retry camera</button>
+                <button onClick={() => setSample(true)}>Use sample-photo mode</button>
+              </div>
+            )}
+            {!pending && (active || sample) && (
+              <>
+                {settings.showGrid && <div className="thirds-grid" />}
+                {settings.isVisible && (
+                  <ReferenceOverlay
+                    asset={reference}
+                    shot={shot}
+                    body={bodyStyle}
+                    settings={settings}
+                    ratio={ratio}
+                    standard={standard}
+                  />
+                )}
+                <div className="frame-badge">
+                  {ratio} · {sample ? 'Sample reference' : resolution || 'Waiting for frame'}
                 </div>
-              )}
-              {focusPoint && (
-                <div
-                  className="focus-point"
-                  style={{ left: `${focusPoint[0] * 100}%`, top: `${focusPoint[1] * 100}%` }}
-                />
-              )}
-            </>
-          )}
-          {pending && (
-            <img className="captured-preview" src={pending.imageDataUrl} alt="Captured Preview" />
-          )}
+                {settings.showHorizon && (
+                  <div
+                    className={`horizon ${tilt !== null && Math.abs(tilt) <= 2.5 ? 'level' : ''}`}
+                    style={{ transform: `rotate(${tilt || 0}deg)` }}
+                  >
+                    <span>
+                      {tilt === null
+                        ? 'Horizon sensor unavailable'
+                        : Math.abs(tilt) <= 2.5
+                          ? 'LEVEL'
+                          : `${tilt.toFixed(1)}°`}
+                    </span>
+                  </div>
+                )}
+                {focusPoint && (
+                  <div
+                    className="focus-point"
+                    style={{ left: `${focusPoint[0] * 100}%`, top: `${focusPoint[1] * 100}%` }}
+                  />
+                )}
+              </>
+            )}
+            {pending && (
+              <img className="captured-preview" src={pending.imageDataUrl} alt="Captured Preview" />
+            )}
+          </div>
         </div>
         {(active || sample) && !pending && (
           <div className="alignment-status">
@@ -593,6 +690,25 @@ export function SmartCameraView({
           </div>
         )}
       </main>
+      {!pending && (
+        <div className="camera-quick-tools">
+          <button
+            aria-pressed={cv}
+            disabled={sample || shot.category !== 'exterior'}
+            onClick={() => setCv((value) => !value)}
+          >
+            <Sparkles size={15} />
+            AI guide {cv ? 'on' : 'off'}
+          </button>
+          <button
+            aria-pressed={settings.isVisible}
+            onClick={() => setSettings((value) => ({ ...value, isVisible: !value.isVisible }))}
+          >
+            <Eye size={15} />
+            Reference
+          </button>
+        </div>
+      )}
       <div className="camera-guidance">{shot.guidanceText}</div>
       {error && (
         <div className="camera-error" role="alert">
@@ -642,6 +758,9 @@ export function SmartCameraView({
         <div className="camera-review-bar">
           <span>
             {existingShots.length} / {template.shots.length} saved locally
+          </span>
+          <span className="sr-only" role="status">
+            {savedNotice}
           </span>
           <button
             disabled={busy}
@@ -799,6 +918,49 @@ export function SmartCameraView({
           onSaved={() => setRefRevision((n) => n + 1)}
         />
       </OverlayControls>
+      <Modal
+        open={exitReview}
+        title="Keep this photograph?"
+        onClose={() => setExitReview(false)}
+        busy={busy}
+      >
+        <p className="dialog-copy">
+          This photo hasn’t been saved yet. Keep it before opening the gallery, or discard this
+          frame.
+        </p>
+        <div className="dialog-actions">
+          <button className="secondary" disabled={busy} onClick={() => setExitReview(false)}>
+            Continue reviewing
+          </button>
+          <button
+            className="secondary"
+            disabled={busy}
+            onClick={() => {
+              setPending(null);
+              setExitReview(false);
+              void Promise.resolve(onClose()).catch((e) => setError(storageError(e)));
+            }}
+          >
+            Discard and leave
+          </button>
+          <button
+            className="primary"
+            disabled={busy}
+            onClick={async () => {
+              if (await keep()) {
+                setExitReview(false);
+                try {
+                  await onClose();
+                } catch (e) {
+                  setError(storageError(e));
+                }
+              }
+            }}
+          >
+            {busy ? 'Saving…' : 'Keep and review gallery'}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

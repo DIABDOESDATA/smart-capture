@@ -1,71 +1,46 @@
 /* global self, caches, URL, fetch, Response */
-/* V2 static app shell. No background uploads and no caching of external APIs. */
-const CACHE = 'smart-capture-v2-2';
+/* Build replaces these constants. Only public app assets are cached. */
+const VERSION = '__BUILD_ID__';
+const CACHE = `smart-capture-shell-${VERSION}`;
+const ASSETS = [];
+const AI_CACHE = 'smart-capture-ai-v1';
+const absolute = (path) => new URL(path, self.registration.scope).href;
+const files = new Set(ASSETS.map(absolute));
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    (async () => {
-      const scope = self.registration.scope;
-      const paths = [
-        './',
-        './manifest.json',
-        './icon-192.png',
-        './icon-512.png',
-        './references/sedan.png',
-        './references/suv.png',
-        './references/truck.png',
-        './references/coupe.png',
-        './references/wagon.png',
-        './references/van.png',
-        './references/convertible.png',
-        './references/classic.png',
-      ];
-      const cache = await caches.open(CACHE);
-      await cache.addAll(paths.map((p) => new URL(p, scope).href));
-      const html = await (await fetch(new URL('./', scope))).text();
-      const assets = [...html.matchAll(/(?:src|href)="([^"#]+\.(?:js|css))"/g)].map(
-        (m) => new URL(m[1], scope).href
-      );
-      await cache.addAll(assets);
-      self.skipWaiting();
-    })()
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    await cache.addAll([...files]);
+    // Updates wait until the operator chooses them or all old windows close.
+  })());
 });
-self.addEventListener('activate', (event) =>
-  event.waitUntil(
-    (async () => {
-      for (const key of await caches.keys())
-        if (key.startsWith('smart-capture-') && key !== CACHE) await caches.delete(key);
-      await self.clients.claim();
-    })()
-  )
-);
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    const old = (await caches.keys()).filter((key) => key.startsWith('smart-capture-shell-') && key !== CACHE);
+    for (const key of old.slice(0, -1)) await caches.delete(key);
+    for (const key of await caches.keys()) if (/^smart-capture-v2-/.test(key)) await caches.delete(key);
+    await self.clients.claim();
+  })());
+});
+self.addEventListener('message', (event) => {
+  if (event.data?.type !== 'SKIP_WAITING') return;
+  event.waitUntil((async () => {
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const scoped = clients.filter((client) => client.url.startsWith(self.registration.scope));
+    if (scoped.length > 1) { event.source?.postMessage({ type: 'UPDATE_BLOCKED' }); return; }
+    await self.skipWaiting();
+  })());
+});
 self.addEventListener('fetch', (event) => {
-  const request = event.request,
-    url = new URL(request.url);
+  const request = event.request, url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
-  event.respondWith(
-    (async () => {
-      const cache = await caches.open(CACHE);
-      try {
-        const response = await fetch(request);
-        if (
-          response.ok &&
-          (request.destination === 'script' ||
-            request.destination === 'style' ||
-            url.pathname.includes('/references/') ||
-            url.pathname.includes('/models/'))
-        )
-          await cache.put(request, response.clone());
-        return response;
-      } catch {
-        const saved = await cache.match(request, { ignoreVary: true });
-        if (saved) return saved;
-        if (request.mode === 'navigate') {
-          const shell = await cache.match(new URL('./', self.registration.scope).href);
-          if (shell) return shell;
-        }
-        return Response.error();
-      }
-    })()
-  );
+  const isModel = url.pathname.startsWith(new URL('models/vehicle/', self.registration.scope).pathname);
+  if (isModel && request.cache === 'no-store') return;
+  if (!files.has(url.href) && request.mode !== 'navigate' && !isModel) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(isModel ? AI_CACHE : CACHE);
+    const key = request.mode === 'navigate' ? absolute('./index.html') : request;
+    const saved = await cache.match(key, { ignoreVary: true });
+    if (saved) return saved;
+    try { return await fetch(request); } catch { return Response.error(); }
+  })());
 });

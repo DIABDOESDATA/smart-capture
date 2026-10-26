@@ -1,126 +1,123 @@
-import React, { useState, useEffect } from 'react';
-import { Camera, Wifi, WifiOff, CloudUpload, Sliders, Home, PlusCircle } from 'lucide-react';
-import { Dealership, UserRole } from '@/types/dealership';
-import { getPendingUploadCount } from '@/services/storage/indexedDb';
-interface NavbarProps {
+import {
+  Camera,
+  Grid2X2,
+  Plus,
+  Settings2,
+  SlidersHorizontal,
+  WifiOff,
+  Check,
+  Download,
+} from 'lucide-react';
+import { Dealership } from '@/types/dealership';
+import { useAppStatus } from '@/services/appLifecycle';
+export type AppView = 'dashboard' | 'new-session' | 'camera' | 'gallery' | 'templates';
+interface Props {
   currentDealership: Dealership;
-  userRole: UserRole;
-  currentView: 'landing' | 'dashboard' | 'new-session' | 'templates';
-  onNavigate: (view: 'landing' | 'dashboard' | 'new-session' | 'templates') => void;
+  currentView: AppView;
+  onNavigate: (view: 'dashboard' | 'new-session' | 'templates') => void;
+  onSettings: () => void;
 }
-export const Navbar: React.FC<NavbarProps> = ({
-  currentDealership,
-  userRole,
-  currentView,
-  onNavigate,
-}) => {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [pendingUploads, setPendingUploads] = useState<number>(0);
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    const checkUploads = async () => {
-      try {
-        const count = await getPendingUploadCount();
-        setPendingUploads(count);
-      } catch {
-        // IDB not yet initialized
-      }
-    };
-    checkUploads();
-    const interval = setInterval(checkUploads, 5000);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-      clearInterval(interval);
-    };
-  }, []);
+export function Navbar({ currentDealership, currentView, onNavigate, onSettings }: Props) {
+  const status = useAppStatus();
+  if (currentView === 'camera') return null;
   return (
-    <header className="sticky top-0 z-40 bg-charcoal-950/90 backdrop-blur-md border-b border-charcoal-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        {/* Brand & Dealership Selector */}
-        <div className="flex items-center gap-3">
+    <>
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
+      <header className="studio-header">
+        <div className="studio-header-inner">
           <button
+            className="studio-brand"
+            aria-label="Smart Capture home"
             onClick={() => onNavigate('dashboard')}
-            className="flex items-center gap-2 group text-left"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-cyan to-brand-blue flex items-center justify-center text-charcoal-950 shadow-glow-cyan">
-              <Camera className="w-4 h-4 font-bold" />
-            </div>
-            <div>
-              <span className="font-bold text-sm tracking-wide text-white block">
-                SMART CAPTURE
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono block -mt-1">
-                {currentDealership.name}
-              </span>
-            </div>
+            <span className="brand-mark">
+              <Camera size={22} strokeWidth={1.7} />
+            </span>
+            <span>
+              <strong>
+                Smart Capture<span className="brand-period">.</span>
+              </strong>
+              <small>{currentDealership.name}</small>
+            </span>
           </button>
-        </div>
-        {/* Navigation Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={() => onNavigate('dashboard')}
-            aria-label="Dashboard"
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
-              currentView === 'dashboard'
-                ? 'bg-charcoal-800 text-white border border-charcoal-700'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Home className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Dashboard</span>
-          </button>
-          <button
-            onClick={() => onNavigate('new-session')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
-              currentView === 'new-session'
-                ? 'bg-brand-cyan text-charcoal-950 shadow-glow-cyan'
-                : 'bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30'
-            }`}
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>New Session</span>
-          </button>
-          <button
-            onClick={() => onNavigate('templates')}
-            className={`p-2 rounded-xl text-xs font-semibold transition-all ${
-              currentView === 'templates'
-                ? 'bg-charcoal-800 text-white border border-charcoal-700'
-                : 'text-slate-400 hover:text-white'
-            }`}
-            title="Dealership Templates"
-            aria-label="Dealership Templates"
-          >
-            <Sliders className="w-4 h-4" />
-          </button>
-          {/* Pending Upload Queue Counter */}
-          {pendingUploads > 0 && (
-            <div
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-brand-amber/20 border border-brand-amber/40 text-brand-amber text-[11px] font-mono"
-              title="Photos queued locally for upload"
+          <nav className="desktop-navigation" aria-label="Main navigation">
+            <button
+              aria-current={
+                currentView === 'dashboard' || currentView === 'gallery' ? 'page' : undefined
+              }
+              onClick={() => onNavigate('dashboard')}
             >
-              <CloudUpload className="w-3.5 h-3.5 animate-pulse" />
-              <span>{pendingUploads} queued</span>
-            </div>
-          )}
-          {/* Network Indicator */}
-          <div
-            className={`p-1.5 rounded-full ${
-              isOnline ? 'text-hud-green' : 'text-hud-red bg-hud-red/20'
-            }`}
-            title={isOnline ? 'Online · Local photos only' : 'Offline • Local Storage Mode'}
-          >
-            {isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
+              Sessions
+            </button>
+            <button
+              aria-label="Dealership Templates"
+              aria-current={currentView === 'templates' ? 'page' : undefined}
+              onClick={() => onNavigate('templates')}
+            >
+              Standards
+            </button>
+            <button className="secondary" onClick={() => onNavigate('new-session')}>
+              <Plus size={18} />
+              New Session
+            </button>
+          </nav>
+          <div className="header-tools">
+            <span
+              className="connection-status"
+              title={
+                status.online
+                  ? 'Photos are saved on this device'
+                  : 'Offline: saved photos remain on this device'
+              }
+            >
+              {status.online ? <Check size={14} /> : <WifiOff size={16} />}
+              <span>{status.online ? 'On-device storage' : 'Offline'}</span>
+            </span>
+            <button
+              className="icon-button settings-trigger"
+              onClick={onSettings}
+              aria-label="Studio settings"
+              title="Install, AI and studio settings"
+            >
+              {status.updateAvailable ? <Download size={21} /> : <Settings2 size={21} />}
+              {status.updateAvailable && <span className="notification-dot" />}
+            </button>
           </div>
-          {/* User Role Badge */}
-          <span className="hidden md:inline px-2 py-0.5 rounded-md bg-charcoal-800 border border-charcoal-700 text-[10px] font-mono text-slate-300 uppercase">
-            {userRole}
-          </span>
         </div>
-      </div>
-    </header>
+      </header>
+      <nav className="mobile-navigation" aria-label="Mobile navigation">
+        <button
+          aria-label="Dashboard"
+          aria-current={
+            currentView === 'dashboard' || currentView === 'gallery' ? 'page' : undefined
+          }
+          onClick={() => onNavigate('dashboard')}
+        >
+          <Grid2X2 size={21} />
+          <span>Sessions</span>
+        </button>
+        <button
+          className="mobile-capture"
+          aria-label="New Session"
+          aria-current={currentView === 'new-session' ? 'page' : undefined}
+          onClick={() => onNavigate('new-session')}
+        >
+          <span>
+            <Camera size={23} />
+          </span>
+          <span>Capture</span>
+        </button>
+        <button
+          aria-label="Dealership Templates"
+          aria-current={currentView === 'templates' ? 'page' : undefined}
+          onClick={() => onNavigate('templates')}
+        >
+          <SlidersHorizontal size={21} />
+          <span>Standards</span>
+        </button>
+      </nav>
+    </>
   );
-};
+}

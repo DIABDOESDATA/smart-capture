@@ -75,7 +75,7 @@ try {
       await page.getByLabel('Pause and review gallery').click();
       await context.setOffline(true);
       await page.reload();
-      await page.getByRole('button', { name: /OFFLINE-CHECK/ }).click();
+      await page.locator('.session-row').filter({ hasText: 'OFFLINE-CHECK' }).click();
       await page.getByText('1 / 20 saved').waitFor();
       const thumbnail = page.locator('.photo-tile img').first();
       await thumbnail.evaluate((img) => img.decode());

@@ -80,7 +80,12 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
       if (decoded.suggestedBodyStyle) setBodyStyle(decoded.suggestedBodyStyle);
       setHasDecoded(!decoded.errorCode || decoded.errorCode === '0');
     } catch (err) {
-      console.error('NHTSA decode failed:', err);
+      if (request === decodeRequest.current)
+        setValidationErrors([
+          err instanceof Error
+            ? err.message
+            : 'Vehicle lookup is unavailable. Enter the details below to continue.',
+        ]);
     } finally {
       if (request === decodeRequest.current) setIsLoading(false);
     }
@@ -123,19 +128,15 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
       });
   };
   return (
-    <div className="bg-charcoal-900 border border-charcoal-800 rounded-3xl p-6 shadow-xl max-w-lg mx-auto">
-      <div className="flex items-center justify-between pb-4 border-b border-charcoal-800">
+    <div className="vehicle-form">
+      <div className="form-heading">
         <div>
           <h2 className="text-lg font-bold text-white tracking-wide">Vehicle Identification</h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Scan VIN plate or enter vehicle specifications to assign guided template.
+            Scan a barcode or enter details. VIN is optional for a manual session.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onOpenVinScanner}
-          className="p-2.5 rounded-2xl bg-charcoal-800 hover:bg-charcoal-700 text-brand-cyan border border-charcoal-700 active:scale-95 transition-all flex items-center gap-1.5 text-xs font-semibold"
-        >
+        <button type="button" onClick={onOpenVinScanner} className="secondary">
           <Car className="w-4 h-4" />
           Scan Camera
         </button>
@@ -146,10 +147,13 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
           <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
             17-Digit Vehicle Identification Number (VIN)
           </label>
-          <div className="relative flex items-center">
+          <div className="vin-entry-row">
             <input
               type="text"
               maxLength={17}
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
               aria-label="Vehicle VIN"
               placeholder="e.g. 1HGCR2F83HA000000"
               value={vinInput}
@@ -180,6 +184,9 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
               Decode
             </button>
           </div>
+          <p className="form-note">
+            Decode uses NHTSA when online. You can enter vehicle details below at any time.
+          </p>
           {/* Suggested OCR character correction */}
           {suggestedCorrection && (
             <div className="mt-2 p-2.5 rounded-xl bg-charcoal-800 border border-brand-amber/40 flex items-center justify-between text-xs">
@@ -215,7 +222,9 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
             <input
               type="number"
               aria-label="Vehicle year"
-              placeholder="2023"
+              placeholder="Year"
+              min={1886}
+              max={new Date().getFullYear() + 2}
               value={year || ''}
               onChange={(e) => setYear(parseInt(e.target.value, 10) || undefined)}
               className="w-full bg-charcoal-950 border border-charcoal-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-cyan"
@@ -259,7 +268,7 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
         <div className="pt-2">
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-xs font-semibold text-slate-300">
-              Vehicle Body Classification (Selects Reference Pack)
+              Body style · chooses your reference
             </label>
             {hasDecoded && (
               <span className="text-[10px] text-brand-cyan font-mono flex items-center gap-1">
@@ -319,13 +328,9 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
         </label>
         {/* Start Guided Capture Button */}
         <div className="pt-3">
-          <button
-            type="submit"
-            disabled={starting || isLoading}
-            className="w-full py-3.5 px-4 rounded-2xl bg-brand-cyan hover:bg-cyan-400 text-charcoal-950 font-bold text-sm tracking-wide shadow-glow-cyan active:scale-95 transition-all flex items-center justify-center gap-2"
-          >
+          <button type="submit" disabled={starting || isLoading} className="primary w-full">
             <CheckCircle2 className="w-4 h-4" />
-            Start Guided Capture Session
+            {starting ? 'Preparing your camera…' : 'Start Guided Capture Session'}
           </button>
         </div>
       </form>
