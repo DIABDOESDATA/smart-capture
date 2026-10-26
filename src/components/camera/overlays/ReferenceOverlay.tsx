@@ -108,7 +108,7 @@ export function ReferenceOverlay({
               fill="none"
             >
               <path
-                d={`M${geometry.x} ${geometry.y + geometry.h}H${geometry.x + geometry.width} M500 ${geometry.y - 25}V${geometry.y + geometry.h + 25} M${geometry.x} ${geometry.y}H${geometry.x + geometry.width}`}
+                d={`M${geometry.x} ${standard.groundY * geometry.height}H${geometry.x + geometry.width} M500 ${geometry.y - 25}V${geometry.y + geometry.h + 25} M${geometry.x} ${geometry.y}H${geometry.x + geometry.width}`}
                 strokeDasharray="12 9"
               />
               <path

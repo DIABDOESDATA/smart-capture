@@ -664,6 +664,15 @@ export function SmartCameraView({
         onClose={() => setOpen(false)}
         onSave={() => putSetting(key, settings)}
       >
+        <details>
+          <summary>Dealership photography standard</summary>
+          <p>{standard.cameraHeightGuidance}</p>
+          <p>{standard.lightingGuidance}</p>
+          <p>
+            Minimum output: {standard.minWidth} × {standard.minHeight}. Nominal perspective follows
+            this shot's reference; no physical distance is measured.
+          </p>
+        </details>
         <h3>Camera controls</h3>
         <label>
           Output ratio
