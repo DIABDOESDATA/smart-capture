@@ -541,7 +541,7 @@ export function SmartCameraView({
           />
         ))}
       </div>
-      <main className="camera-stage">
+      <div className="camera-stage">
         <div
           className="viewfinder-space"
           style={
@@ -689,7 +689,7 @@ export function SmartCameraView({
             ))}
           </div>
         )}
-      </main>
+      </div>
       {!pending && (
         <div className="camera-quick-tools">
           <button
@@ -928,6 +928,11 @@ export function SmartCameraView({
           This photo hasn’t been saved yet. Keep it before opening the gallery, or discard this
           frame.
         </p>
+        {error && (
+          <p role="alert" className="warning">
+            {error}
+          </p>
+        )}
         <div className="dialog-actions">
           <button className="secondary" disabled={busy} onClick={() => setExitReview(false)}>
             Continue reviewing

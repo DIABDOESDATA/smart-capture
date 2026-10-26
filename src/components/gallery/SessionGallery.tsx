@@ -115,7 +115,7 @@ export function SessionGallery({
           Export gallery
         </button>
       </header>
-      <main className="gallery-content">
+      <div className="gallery-content">
         <section className="panel gallery-progress">
           <div>
             <span className="eyebrow">Capture Progress</span>
@@ -207,7 +207,7 @@ export function SessionGallery({
             );
           })}
         </div>
-      </main>
+      </div>
       {selected && (
         <Modal
           open={!!selected}

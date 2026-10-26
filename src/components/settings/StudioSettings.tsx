@@ -38,9 +38,11 @@ export function StudioSettings({
     /iPhone|iPad|iPod/.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   useEffect(() => {
+    if (open) setName(preferences.name);
+  }, [open, preferences.name]);
+  useEffect(() => {
     if (!open) return;
     let live = true;
-    setName(preferences.name);
     setMessage('');
     void hasOfflineDetector()
       .then((value) => {
@@ -57,7 +59,7 @@ export function StudioSettings({
       live = false;
       abort.current?.abort();
     };
-  }, [open, preferences.name]);
+  }, [open]);
   const close = () => {
     abort.current?.abort();
     onClose();

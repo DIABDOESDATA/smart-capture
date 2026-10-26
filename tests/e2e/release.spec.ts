@@ -61,11 +61,15 @@ test('unsaved photo guard retains the frame and saves before exiting', async ({ 
   await expect(page.getByAltText('Captured Preview')).toBeVisible();
   await page.getByLabel('Pause and review gallery').click();
   await page.getByRole('button', { name: 'Keep and review gallery' }).click();
-  await expect(page.getByText('1 / 20 saved')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '1 / 20 saved', exact: true })).toBeVisible();
   await page.screenshot({ path: info.outputPath('release-gallery.png'), fullPage: true });
+  const gallery = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+    .analyze();
+  expect(gallery.violations).toEqual([]);
   await page.reload();
   await page.locator('.session-row').filter({ hasText: 'RELEASE-001' }).click();
-  await expect(page.getByText('1 / 20 saved')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '1 / 20 saved', exact: true })).toBeVisible();
 });
 test('camera ratios remain visible in portrait and landscape', async ({ page }, info) => {
   await startSample(page);

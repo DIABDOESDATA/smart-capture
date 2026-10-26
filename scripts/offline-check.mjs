@@ -65,6 +65,15 @@ try {
         ])
       );
       await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+      await page.getByRole('button', { name: 'Studio settings' }).click();
+      await page.getByRole('button', { name: 'Download AI pack' }).click();
+      await page.getByText('AI pack verified and saved.').waitFor({ timeout: 90000 });
+      await page.getByRole('button', { name: 'Close Studio settings' }).click();
+      await context.setOffline(true);
+      await page.reload();
+      await page.getByRole('button', { name: 'Dealership Templates' }).click();
+      await page.getByRole('heading', { name: 'Dealership Photography Templates' }).waitFor();
+      await page.getByRole('button', { name: 'Smart Capture home' }).click();
       await page.getByRole('button', { name: 'New Photo Session' }).click();
       await page.getByPlaceholder('e.g. DD-8472').fill('OFFLINE-CHECK');
       await page.getByRole('button', { name: 'Start Guided Capture Session' }).click();
@@ -93,6 +102,8 @@ try {
       results.push({
         engine: name,
         offlineReload: true,
+        offlineFirstVisitToLazyScreens: true,
+        verifiedOfflineAiPack: true,
         photoDecoded: true,
         exportTriggered: true,
         downloadFailure: failure,

@@ -15,13 +15,16 @@ This pass upgrades the standalone product toward a public release candidate. It 
 - Added Android install prompt support, iPhone/Safari instructions, installed/offline/update state, privacy explanation and storage protection requests.
 - Added a resumable offline AI pack download with pinned byte lengths and SHA-256 verification. Individual inference remains local. The optional 18.56 MB model is not part of the initial shell download.
 
+- CI caught a workspace-save race that cleared success feedback and could cancel an AI download. Modal lifecycle and name synchronization are now independent; a component regression covers the parent update.
+- Reviewed CI screenshots for desktop and iPhone home, settings, vehicle form and portrait/landscape camera. Approved the two changed camera baselines after verifying the frame and shutter remain visible. Strengthened gallery navigation assertions to wait for the gallery heading, not matching camera progress text.
+
 ## Validation and evidence
 
 The local in-app browser permission gate continues to deny observation of localhost:5173, despite two explicit user confirmations. Its block has not been bypassed. Local source, unit, lint, type and build checks remain available. Browser execution and review evidence use the repository's existing isolated GitHub CI checkout and test fixtures, not the user's open browser or stored photos.
 
 Additional tests cover worker update isolation, offline asset selection, excluded API requests, verified AI downloads, safe export preparation, unchanged workspace data identity, native modal behavior, viewport bounds, unsaved-photo recovery, workspace persistence, search/deletion confirmation and automated WCAG checks with axe. Browser fixtures run in Chromium and WebKit; they do not constitute physical device acceptance.
 
-Final check results and screenshot review will be recorded after the candidate finishes CI.
+Local checks: 84 unit/component tests pass; TypeScript, ESLint and Prettier pass. Production build and the final browser/production-offline rerun are tracked on PR #12. The final review deliverable records the exact tested commit and CI links.
 
 ## Release gates still requiring external evidence
 

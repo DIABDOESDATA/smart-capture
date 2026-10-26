@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { StudioSettings } from '@/components/settings/StudioSettings';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { Modal } from '@/components/ui/Modal';
@@ -6,6 +8,12 @@ import { safeExportName, canShareFile } from '@/services/export/share';
 import { loadWorkspace, saveWorkspace, WORKSPACE_ID } from '@/services/workspace';
 import { VehicleCaptureSession } from '@/types/capture';
 const mocks = vi.hoisted(() => ({ get: vi.fn(), put: vi.fn(), zip: vi.fn(), download: vi.fn() }));
+vi.mock('@/services/appLifecycle', () => ({
+  useAppStatus: () => ({ online: true, installed: false }),
+  applyAppUpdate: vi.fn(),
+  checkForUpdate: vi.fn(),
+  installApp: vi.fn(),
+}));
 vi.mock('@/services/storage/indexedDb', () => ({ getSetting: mocks.get, putSetting: mocks.put }));
 vi.mock('@/services/export/zipExporter', () => ({
   generateSessionZip: mocks.zip,
@@ -18,6 +26,29 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 describe('Release reliability', () => {
+  it('keeps save feedback after the parent updates workspace preferences', async () => {
+    function Workspace() {
+      const [preferences, setPreferences] = useState({ name: 'My studio', aiGuidance: false });
+      return (
+        <StudioSettings
+          open
+          onClose={() => {}}
+          preferences={preferences}
+          canUpdate
+          onSave={async (value) => {
+            setPreferences(value);
+          }}
+        />
+      );
+    }
+    render(<Workspace />);
+    fireEvent.change(screen.getByLabelText('Studio name'), {
+      target: { value: 'Northline Motors' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save studio name' }));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Studio name saved.'));
+    expect(screen.getByRole('button', { name: 'Save studio name' })).toBeDisabled();
+  });
   it('retains the existing data partition while validating a public studio name', async () => {
     expect(WORKSPACE_ID).toBe('dealership-ddrive-01');
     mocks.get.mockResolvedValue({ name: '  Hilltop Cars  ', aiGuidance: true });
