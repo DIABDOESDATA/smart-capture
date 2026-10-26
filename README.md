@@ -58,3 +58,7 @@ npm run benchmark:detector
 See [test report](docs/CODEX_TEST_REPORT.md), [audit](docs/CODEX_AUDIT_V2.md), [handoff](docs/CODEX_HANDOFF.md), [field acceptance](docs/PILOT_ACCEPTANCE_V2.md), [camera design](docs/camera-implementation.md), [reference provenance/prompts](public/references/provenance.json), [CV evaluation](docs/CV_EVALUATION_V2.md), and [future viewer contract](docs/PHOTO_STUDIO_CONTRACT_V2.md).
 
 New upstream component/model notices are in [public/notices](public/notices) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The original repository's commercial licensing remains pending in LICENSE.md; no open-source license is added to this application.
+
+### Build runtime
+
+Use Node.js 24 or newer (`.nvmrc` selects 24). The locked ZXing barcode dependency requires Node 24; all build/validation workflows use it. This is a development/build requirement; the distributed app runs in the browser.
