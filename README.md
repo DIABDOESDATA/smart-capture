@@ -1,6 +1,6 @@
 # Smart Capture V2
 
-Guided automotive photography for an individual or dealership studio. **Public-release candidate under review; physical Android/iPhone acceptance and an approved HTTPS release host are still required.** The original D Drive pilot remains supported. No D Drive production system is changed.
+Guided automotive photography for an individual or dealership studio. **Release candidate available for physical Android/iPhone acceptance at [dealercam.diabdoesdata.com](https://dealercam.diabdoesdata.com/).** The original D Drive pilot remains supported. No D Drive production system is changed.
 
 The 2026-10-26 [release review](docs/RELEASE_REVIEW.md) adds the studio interface, mobile navigation, install guidance, safe app updates, a verified offline AI pack, native file sharing, and capture/data-loss safeguards.
 
@@ -13,7 +13,7 @@ npm run dev -- --host 0.0.0.0 --port 5173
 
 Open http://localhost:5173 on this computer. Start a vehicle session, optionally decode or scan a VIN, select a checklist, and allow camera access. Without a camera, explicitly choose **Use sample-photo mode**. Sample images are visibly marked and retain sample provenance in storage and exports.
 
-Phone cameras require a trusted **HTTPS origin**; an ordinary HTTP LAN URL is not sufficient. Use an approved local HTTPS reverse proxy or a separately approved preview host. No deployment is performed by this branch. Test the production offline shell with `npm run build`, `npm run preview -- --host 0.0.0.0`, and `npm run test:offline`.
+For phone testing, open **https://dealercam.diabdoesdata.com/** in Safari or Chrome. Phone cameras require a trusted **HTTPS origin**; an ordinary HTTP LAN URL is not sufficient. Hosting, DNS, updates and verification are recorded in [DEALERCAM_DEPLOYMENT.md](docs/DEALERCAM_DEPLOYMENT.md). Test the production offline shell with `npm run build`, `npm run preview -- --host 0.0.0.0`, and `npm run test:offline`.
 
 ## Implemented
 
