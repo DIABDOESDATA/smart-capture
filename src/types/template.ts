@@ -1,7 +1,5 @@
 import { BodyStyle } from './vehicle';
-
 export type ShotCategory = 'exterior' | 'exterior_detail' | 'interior' | 'additional';
-
 export type ShotAngle =
   // Exterior primary
   | 'FRONT_3Q_DRIVER' // Hero
@@ -30,8 +28,14 @@ export type ShotAngle =
   | 'VIN_DOOR_JAMB'
   | 'KEYS_ACCESSORIES'
   | 'CONDITION_DOCUMENTATION'
-  | 'ADDITIONAL_FREE';
-
+  | 'ADDITIONAL_FREE'
+  | 'THIRD_ROW'
+  | 'ROOF_SUNROOF'
+  | 'DOOR_TRIM'
+  | 'STEERING_WHEEL'
+  | 'CENTER_CONSOLE'
+  | 'HOOD_OPEN'
+  | 'CONVERTIBLE_ROOF_UP';
 export interface ShotDefinition {
   id: string;
   code: ShotAngle;
@@ -43,7 +47,6 @@ export interface ShotDefinition {
   recommendedDistanceMeters?: number;
   order: number;
 }
-
 export interface CaptureTemplate {
   id: string;
   name: string;
@@ -51,6 +54,7 @@ export interface CaptureTemplate {
   description: string;
   bodyStyle: BodyStyle;
   aspectRatio: '4:3' | '16:9' | '1:1';
+  aspectRatioOverride?: boolean;
   targetResolutionWidth: number;
   targetResolutionHeight: number;
   shots: ShotDefinition[];

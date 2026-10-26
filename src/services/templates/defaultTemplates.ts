@@ -1,6 +1,5 @@
 import { CaptureTemplate, ShotDefinition } from '@/types/template';
 import { BodyStyle } from '@/types/vehicle';
-
 export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
   // 1-8 Exterior standard walkaround
   {
@@ -12,7 +11,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isHero: true,
     guidanceText:
       'Step 45° to the driver front corner. Align headlights, wheels, and front bumper.',
-    recommendedDistanceMeters: 4.5,
+
     order: 1,
   },
   {
@@ -23,7 +22,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Stand directly center-front. Center badge and align horizontal bumper guide.',
-    recommendedDistanceMeters: 4.0,
+
     order: 2,
   },
   {
@@ -34,7 +33,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Step 45° to passenger front corner. Balance hood length and side bodyline.',
-    recommendedDistanceMeters: 4.5,
+
     order: 3,
   },
   {
@@ -46,7 +45,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isHero: false,
     guidanceText:
       'Step back to center-passenger side. Ensure both wheels sit on the horizon guide.',
-    recommendedDistanceMeters: 5.5,
+
     order: 4,
   },
   {
@@ -58,7 +57,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isHero: false,
     guidanceText:
       'Position at rear passenger quarter. Frame taillight, trunk line, and rear wheel.',
-    recommendedDistanceMeters: 4.5,
+
     order: 5,
   },
   {
@@ -69,7 +68,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Stand directly behind center bumper. Level license plate and rear window.',
-    recommendedDistanceMeters: 4.0,
+
     order: 6,
   },
   {
@@ -80,7 +79,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Position at rear driver corner. Align rear quarter panel and exhaust tips.',
-    recommendedDistanceMeters: 4.5,
+
     order: 7,
   },
   {
@@ -91,10 +90,9 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Step back to center-driver side. Frame both wheels flat along lower guideline.',
-    recommendedDistanceMeters: 5.5,
+
     order: 8,
   },
-
   // 9-12 Exterior Details
   {
     id: 'shot-09',
@@ -104,7 +102,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Crouch at wheel center. Center wheel cap with brake caliper visible.',
-    recommendedDistanceMeters: 1.2,
+
     order: 9,
   },
   {
@@ -115,7 +113,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: false,
     isHero: false,
     guidanceText: 'Crouch square with rear wheel. Show tire tread depth and wheel rim condition.',
-    recommendedDistanceMeters: 1.2,
+
     order: 10,
   },
   {
@@ -126,7 +124,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: false,
     isHero: false,
     guidanceText: 'Close-up of front emblem, grille texture, and driver headlight assembly.',
-    recommendedDistanceMeters: 1.5,
+
     order: 11,
   },
   {
@@ -137,10 +135,9 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: false,
     isHero: false,
     guidanceText: 'Close-up of vehicle badge, trim lettering, and rear taillight lens.',
-    recommendedDistanceMeters: 1.2,
+
     order: 12,
   },
-
   // 13-18 Interior
   {
     id: 'shot-13',
@@ -150,7 +147,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Open driver door. Frame driver seat bolsters, pedals, and steering wheel.',
-    recommendedDistanceMeters: 1.5,
+
     order: 13,
   },
   {
@@ -162,7 +159,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isHero: false,
     guidanceText:
       'Sit in passenger or rear seat. Frame complete steering wheel, dash, and air vents.',
-    recommendedDistanceMeters: 1.0,
+
     order: 14,
   },
   {
@@ -173,7 +170,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Ignition on. Frame odometer mileage clearly without steering wheel glare.',
-    recommendedDistanceMeters: 0.6,
+
     order: 15,
   },
   {
@@ -185,7 +182,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isHero: false,
     guidanceText:
       'Shoot from back seat looking forward. Show both seat cushions and center console.',
-    recommendedDistanceMeters: 1.2,
+
     order: 16,
   },
   {
@@ -196,7 +193,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Open rear door. Frame rear passenger bench, headrests, and legroom.',
-    recommendedDistanceMeters: 1.2,
+
     order: 17,
   },
   {
@@ -208,10 +205,9 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isHero: false,
     guidanceText:
       'Display navigation/radio active. Frame screen, climate controls, and gear shift.',
-    recommendedDistanceMeters: 0.8,
+
     order: 18,
   },
-
   // 19-24 Additional & Condition
   {
     id: 'shot-19',
@@ -221,7 +217,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Trunk lid open. Capture cargo floor, spare tire compartment, or folding seats.',
-    recommendedDistanceMeters: 2.0,
+
     order: 19,
   },
   {
@@ -232,7 +228,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'Hood propped open. Shoot clean engine bay showing fluid reservoirs and battery.',
-    recommendedDistanceMeters: 1.8,
+
     order: 20,
   },
   {
@@ -243,7 +239,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: true,
     isHero: false,
     guidanceText: 'High clarity macro of driver door jamb federal safety / tire pressure sticker.',
-    recommendedDistanceMeters: 0.4,
+
     order: 21,
   },
   {
@@ -254,7 +250,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: false,
     isHero: false,
     guidanceText: 'Display keys, master fobs, books, or window sticker on clean console or seat.',
-    recommendedDistanceMeters: 0.6,
+
     order: 22,
   },
   {
@@ -266,7 +262,7 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isHero: false,
     guidanceText:
       'Close-up of any noticeable scratches, dings, or wear for transparent disclosure.',
-    recommendedDistanceMeters: 0.8,
+
     order: 23,
   },
   {
@@ -277,11 +273,10 @@ export const MASTER_24_SHOT_SEQUENCE: ShotDefinition[] = [
     isRequired: false,
     isHero: false,
     guidanceText: 'Sunroof, bedliner, tow hitch, upgraded sound, or custom modifications.',
-    recommendedDistanceMeters: 1.5,
+
     order: 24,
   },
 ];
-
 /**
  * Creates default templates for dealerships based on body style and workflow requirements.
  */
@@ -290,7 +285,6 @@ export function getDefaultTemplates(dealershipId: string = 'default'): CaptureTe
   const ddrive20Shots = MASTER_24_SHOT_SEQUENCE.filter(
     (s) => s.order !== 10 && s.order !== 12 && s.order !== 23 && s.order !== 24
   ).map((s, idx) => ({ ...s, order: idx + 1 }));
-
   // 12-Shot Retail Fast Capture (8 exterior + 4 key interior)
   const fast12Shots = [
     ...MASTER_24_SHOT_SEQUENCE.slice(0, 8),
@@ -299,13 +293,11 @@ export function getDefaultTemplates(dealershipId: string = 'default'): CaptureTe
     MASTER_24_SHOT_SEQUENCE[14], // Cluster
     MASTER_24_SHOT_SEQUENCE[18], // Trunk
   ].map((s, idx) => ({ ...s, order: idx + 1 }));
-
   // 8-Shot Wholesale Quick Capture
   const wholesale8Shots = MASTER_24_SHOT_SEQUENCE.slice(0, 8).map((s, idx) => ({
     ...s,
     order: idx + 1,
   }));
-
   return [
     {
       id: 'template-ddrive-20',
@@ -359,7 +351,6 @@ export function getDefaultTemplates(dealershipId: string = 'default'): CaptureTe
     },
   ];
 }
-
 /**
  * Returns customized template for specific body style (e.g. pickup trucks getting bed photo)
  */
@@ -369,7 +360,6 @@ export function getTemplateForBodyStyle(
 ): CaptureTemplate {
   const base = getDefaultTemplates(dealershipId)[0];
   const shots = [...base.shots];
-
   if (bodyStyle === 'truck') {
     // Replace trunk shot with truck bed shot
     const trunkIdx = shots.findIndex((s) => s.code === 'TRUNK_CARGO');
@@ -390,7 +380,6 @@ export function getTemplateForBodyStyle(
       };
     }
   }
-
   return {
     ...base,
     id: `template-${bodyStyle}-default`,

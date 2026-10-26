@@ -10,7 +10,6 @@ export type BodyStyle =
   | 'convertible'
   | 'classic'
   | 'other';
-
 export interface Vehicle {
   id: string;
   dealershipId: string;
@@ -22,12 +21,12 @@ export interface Vehicle {
   bodyStyle: BodyStyle;
   stockNumber?: string;
   color?: string;
+  features?: { rearSeats?: boolean; thirdRow?: boolean; sunroof?: boolean };
   mileage?: number;
   templateId: string;
   createdAt: string;
   updatedAt: string;
 }
-
 export interface NhtsaVinDecodeResult {
   vin: string;
   isValid: boolean;

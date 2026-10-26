@@ -10,16 +10,13 @@ import {
   Layers,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-
 interface LandingPageProps {
   onEnterApp: () => void;
 }
-
 export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
   const [pilotEmail, setPilotEmail] = useState('');
   const [dealershipName, setDealershipName] = useState('');
   const [pilotSubmitted, setPilotSubmitted] = useState(false);
-
   const handlePilotSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!pilotEmail || !dealershipName) return;
@@ -30,7 +27,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
       origin: { y: 0.6 },
     });
   };
-
   return (
     <div className="min-h-screen bg-charcoal-950 text-slate-100 selection:bg-brand-cyan/20 selection:text-brand-cyan">
       {/* 1. TOP NAVIGATION */}
@@ -42,7 +38,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             </div>
             <span className="font-bold text-lg tracking-wider text-white">SMART CAPTURE</span>
           </div>
-
           <div className="flex items-center gap-3">
             <button
               onClick={onEnterApp}
@@ -54,26 +49,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           </div>
         </div>
       </nav>
-
       {/* 2. HERO SECTION */}
       <section className="relative pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan text-xs font-semibold mb-6">
           <Sparkles className="w-3.5 h-3.5" />
           Engineered for Independent Dealerships & Dealer Groups
         </div>
-
         <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight max-w-4xl mx-auto leading-tight">
           Consistent Vehicle Photos.{' '}
           <span className="bg-gradient-to-r from-brand-cyan via-teal-300 to-brand-amber bg-clip-text text-transparent">
             Every Car. Every Time.
           </span>
         </h1>
-
         <p className="mt-6 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
           Guide your team through professional vehicle photography with instant VIN recognition,
           on-screen framing silhouettes, and automated dealership gallery organization.
         </p>
-
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
           <button
             onClick={onEnterApp}
@@ -90,7 +81,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           </a>
         </div>
       </section>
-
       {/* 3. PROBLEM & SOLUTION GRID */}
       <section className="py-16 bg-charcoal-900/50 border-y border-charcoal-850">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -102,7 +92,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               Feedback from actual dealership operators reveals why inventory photos fail.
             </p>
           </div>
-
           <div className="grid md:grid-cols-3 gap-6">
             <div className="p-6 rounded-3xl bg-charcoal-900 border border-charcoal-800 shadow-xl">
               <div className="w-10 h-10 rounded-2xl bg-hud-red/20 text-hud-red flex items-center justify-center mb-4">
@@ -114,7 +103,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 Your digital showroom looks disorganized and unprofessional.
               </p>
             </div>
-
             <div className="p-6 rounded-3xl bg-charcoal-900 border border-charcoal-800 shadow-xl">
               <div className="w-10 h-10 rounded-2xl bg-brand-amber/20 text-brand-amber flex items-center justify-center mb-4">
                 <Zap className="w-5 h-5" />
@@ -125,7 +113,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 pulled back out, parked, and re-photographed.
               </p>
             </div>
-
             <div className="p-6 rounded-3xl bg-charcoal-900 border border-charcoal-800 shadow-xl">
               <div className="w-10 h-10 rounded-2xl bg-brand-cyan/20 text-brand-cyan flex items-center justify-center mb-4">
                 <Layers className="w-5 h-5" />
@@ -139,7 +126,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           </div>
         </div>
       </section>
-
       {/* 4. HOW SMART CAPTURE WORKS */}
       <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-12">
@@ -147,7 +133,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             Automotive Photography In 4 Simple Steps
           </h2>
         </div>
-
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="p-5 rounded-2xl bg-charcoal-900 border border-charcoal-800">
             <span className="text-2xl font-mono font-bold text-brand-cyan">01</span>
@@ -157,7 +142,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               automatically.
             </p>
           </div>
-
           <div className="p-5 rounded-2xl bg-charcoal-900 border border-charcoal-800">
             <span className="text-2xl font-mono font-bold text-brand-cyan">02</span>
             <h4 className="font-bold text-sm text-white mt-2">Guided Silhouette Camera</h4>
@@ -166,7 +150,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               each angle.
             </p>
           </div>
-
           <div className="p-5 rounded-2xl bg-charcoal-900 border border-charcoal-800">
             <span className="text-2xl font-mono font-bold text-brand-cyan">03</span>
             <h4 className="font-bold text-sm text-white mt-2">Instant Quality Checks</h4>
@@ -175,7 +158,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               leave the lot.
             </p>
           </div>
-
           <div className="p-5 rounded-2xl bg-charcoal-900 border border-charcoal-800">
             <span className="text-2xl font-mono font-bold text-brand-cyan">04</span>
             <h4 className="font-bold text-sm text-white mt-2">Export & Syndication</h4>
@@ -186,7 +168,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           </div>
         </div>
       </section>
-
       {/* 5. PRICING TIERS */}
       <section className="py-16 bg-charcoal-900/50 border-t border-charcoal-850">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -198,7 +179,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
               No long-term contracts. Designed for independent dealers and growing dealer groups.
             </p>
           </div>
-
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Basic Tier */}
             <div className="p-6 rounded-3xl bg-charcoal-900 border border-charcoal-800 flex flex-col justify-between">
@@ -235,7 +215,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 Start Free Trial
               </button>
             </div>
-
             {/* Pro Tier (Highlighted) */}
             <div className="p-6 rounded-3xl bg-charcoal-900 border-2 border-brand-cyan relative flex flex-col justify-between shadow-glow-cyan">
               <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-brand-cyan text-charcoal-950 font-bold text-[10px] tracking-wider uppercase">
@@ -280,7 +259,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 Launch Pro Studio
               </button>
             </div>
-
             {/* Dealer Group Tier */}
             <div className="p-6 rounded-3xl bg-charcoal-900 border border-charcoal-800 flex flex-col justify-between">
               <div>
@@ -320,7 +298,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           </div>
         </div>
       </section>
-
       {/* 6. PILOT APPLICATION FORM */}
       <section id="pilot" className="py-16 max-w-3xl mx-auto px-4 sm:px-6">
         <div className="bg-charcoal-900 border border-charcoal-800 rounded-3xl p-8 shadow-2xl text-center">
@@ -332,7 +309,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             We are accepting 3 independent dealerships for our hands-on pilot testing program.
             Includes customized templates and free full platform access.
           </p>
-
           {pilotSubmitted ? (
             <div className="mt-6 p-4 rounded-2xl bg-hud-green/20 border border-hud-green text-hud-green text-sm font-semibold flex items-center justify-center gap-2">
               <CheckCircle2 className="w-5 h-5" />
@@ -379,7 +355,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
           )}
         </div>
       </section>
-
       {/* 7. FOOTER */}
       <footer className="border-t border-charcoal-850 py-8 text-center text-xs text-slate-500">
         <p>© 2026 Smart Capture Automotive Photography. All rights reserved.</p>

@@ -1,5 +1,4 @@
 export type UserRole = 'platform_admin' | 'owner' | 'manager' | 'photographer';
-
 export interface Dealership {
   id: string;
   name: string;
@@ -15,7 +14,6 @@ export interface Dealership {
   storageUsedMb: number;
   createdAt: string;
 }
-
 export interface DealershipMember {
   id: string;
   dealershipId: string;
@@ -26,7 +24,6 @@ export interface DealershipMember {
   isActive: boolean;
   joinedAt: string;
 }
-
 export interface PlanEntitlements {
   planId: 'basic' | 'pro' | 'dealer_group';
   name: string;

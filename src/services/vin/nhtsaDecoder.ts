@@ -1,16 +1,12 @@
 import { BodyStyle, NhtsaVinDecodeResult } from '@/types/vehicle';
 import { validateVin } from './vinValidator';
-
 const NHTSA_BASE_URL = import.meta.env.VITE_NHTSA_API_URL || 'https://vpic.nhtsa.dot.gov/api';
-
 /**
  * Maps NHTSA BodyClass and VehicleType strings into Smart Capture standardized BodyStyle
  */
 export function mapNhtsaToBodyStyle(bodyClass?: string, vehicleType?: string): BodyStyle {
-  if (!bodyClass && !vehicleType) return 'sedan';
-
+  if (!bodyClass && !vehicleType) return 'other';
   const normalized = `${bodyClass || ''} ${vehicleType || ''}`.toLowerCase();
-
   if (
     normalized.includes('pickup') ||
     normalized.includes('truck') ||
@@ -45,42 +41,36 @@ export function mapNhtsaToBodyStyle(bodyClass?: string, vehicleType?: string): B
   if (normalized.includes('sedan') || normalized.includes('saloon')) {
     return 'sedan';
   }
-
   return 'other';
 }
-
 /**
  * Fetches and decodes vehicle specifications using the official NHTSA vPIC Public API.
  */
 export async function decodeVinWithNhtsa(vin: string): Promise<NhtsaVinDecodeResult> {
   const validation = validateVin(vin);
   const cleanVin = validation.cleanVin;
-
   try {
     const response = await fetch(
       `${NHTSA_BASE_URL}/vehicles/DecodeVinValues/${cleanVin}?format=json`,
       {
         headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(10000),
       }
     );
-
     if (!response.ok) {
       throw new Error(`NHTSA vPIC API returned status ${response.status}`);
     }
-
     const data = await response.json();
     const result = data?.Results?.[0];
-
     if (!result) {
       return {
         vin: cleanVin,
         isValid: validation.isValid,
-        suggestedBodyStyle: 'sedan',
+        suggestedBodyStyle: 'other',
         errorCode: 'NO_RESULTS',
         errorText: 'No vehicle records returned from NHTSA.',
       };
     }
-
     const year = result.ModelYear ? parseInt(result.ModelYear, 10) : undefined;
     const make = result.Make?.trim() || undefined;
     const model = result.Model?.trim() || undefined;
@@ -88,7 +78,6 @@ export async function decodeVinWithNhtsa(vin: string): Promise<NhtsaVinDecodeRes
     const bodyClass = result.BodyClass?.trim() || undefined;
     const vehicleType = result.VehicleType?.trim() || undefined;
     const suggestedBodyStyle = mapNhtsaToBodyStyle(bodyClass, vehicleType);
-
     return {
       vin: cleanVin,
       isValid: validation.isValid,
@@ -109,7 +98,7 @@ export async function decodeVinWithNhtsa(vin: string): Promise<NhtsaVinDecodeRes
     return {
       vin: cleanVin,
       isValid: validation.isValid,
-      suggestedBodyStyle: 'sedan',
+      suggestedBodyStyle: 'other',
       errorCode: 'NETWORK_ERROR',
       errorText: error instanceof Error ? error.message : 'Failed to connect to NHTSA API',
     };

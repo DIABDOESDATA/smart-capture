@@ -1,19 +1,38 @@
-import React, { useState } from 'react';
+import { ADDITIONAL_SHOTS } from '@/services/templates/additionalShots';
+import React, { useState, useEffect } from 'react';
 import { Star, ChevronLeft } from 'lucide-react';
 import { CaptureTemplate } from '@/types/template';
+import { loadTemplates, persistTemplates } from '@/services/templates/repository';
+import { PhotographyStandardsEditor } from './PhotographyStandardsEditor';
 import { getDefaultTemplates } from '@/services/templates/defaultTemplates';
-
 interface TemplateManagerProps {
   dealershipId: string;
   onBack: () => void;
 }
-
 export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, onBack }) => {
   const [templates, setTemplates] = useState<CaptureTemplate[]>(getDefaultTemplates(dealershipId));
   const [activeTemplateId, setActiveTemplateId] = useState<string>(templates[0].id);
-
+  const [loaded, setLoaded] = useState(false);
+  const [message, setMessage] = useState('');
+  useEffect(() => {
+    loadTemplates(dealershipId)
+      .then((t) => {
+        setTemplates(t);
+        setLoaded(true);
+      })
+      .catch(() => setMessage('Templates could not be loaded.'));
+  }, [dealershipId]);
+  const saveTemplates = async () => {
+    try {
+      await persistTemplates(dealershipId, templates);
+      setMessage(
+        'Templates saved. New sessions use these settings; existing checklists are preserved.'
+      );
+    } catch {
+      setMessage('Save failed. Template changes are not persisted.');
+    }
+  };
   const activeTemplate = templates.find((t) => t.id === activeTemplateId) || templates[0];
-
   const handleToggleRequired = (shotId: string) => {
     const updatedShots = activeTemplate.shots.map((s) =>
       s.id === shotId ? { ...s, isRequired: !s.isRequired } : s
@@ -22,7 +41,6 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, 
       prev.map((t) => (t.id === activeTemplateId ? { ...t, shots: updatedShots } : t))
     );
   };
-
   const handleSetHero = (shotId: string) => {
     const updatedShots = activeTemplate.shots.map((s) => ({
       ...s,
@@ -32,7 +50,6 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, 
       prev.map((t) => (t.id === activeTemplateId ? { ...t, shots: updatedShots } : t))
     );
   };
-
   return (
     <div className="min-h-screen bg-charcoal-950 text-slate-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -55,7 +72,11 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, 
             </div>
           </div>
         </div>
-
+        <PhotographyStandardsEditor dealer={dealershipId} />
+        <button className="primary" disabled={!loaded} onClick={() => void saveTemplates()}>
+          Save templates
+        </button>
+        <p role="status">{message}</p>
         {/* Template Selector Tabs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {templates.map((tpl) => (
@@ -80,7 +101,33 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, 
             </button>
           ))}
         </div>
-
+        <label>
+          Add an applicable scene
+          <select
+            aria-label="Add template scene"
+            value=""
+            onChange={(e) => {
+              const extra = ADDITIONAL_SHOTS.find((s) => s.code === e.target.value);
+              if (extra)
+                setTemplates((ts) =>
+                  ts.map((t) =>
+                    t.id === activeTemplateId
+                      ? { ...t, shots: [...t.shots, { ...extra, order: t.shots.length + 1 }] }
+                      : t
+                  )
+                );
+            }}
+          >
+            <option value="">Choose additional guide…</option>
+            {ADDITIONAL_SHOTS.filter(
+              (s) => !activeTemplate.shots.some((p) => p.code === s.code)
+            ).map((s) => (
+              <option key={s.code} value={s.code}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </label>
         {/* Active Template Shot Checklist Editor */}
         <div className="bg-charcoal-900 border border-charcoal-800 rounded-3xl p-6 shadow-xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-charcoal-800 gap-2">
@@ -90,7 +137,27 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, 
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono px-3 py-1 rounded-xl bg-charcoal-950 border border-charcoal-750 text-slate-300">
-                Aspect: {activeTemplate.aspectRatio}
+                <select
+                  aria-label="Template aspect ratio"
+                  value={activeTemplate.aspectRatio}
+                  onChange={(e) =>
+                    setTemplates((ts) =>
+                      ts.map((t) =>
+                        t.id === activeTemplateId
+                          ? {
+                              ...t,
+                              aspectRatio: e.target.value as CaptureTemplate['aspectRatio'],
+                              aspectRatioOverride: true,
+                            }
+                          : t
+                      )
+                    )
+                  }
+                >
+                  {['4:3', '16:9', '1:1'].map((r) => (
+                    <option key={r}>{r}</option>
+                  ))}
+                </select>
               </span>
               <span className="text-xs font-mono px-3 py-1 rounded-xl bg-charcoal-950 border border-charcoal-750 text-slate-300">
                 Target: {activeTemplate.targetResolutionWidth}x
@@ -98,7 +165,6 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, 
               </span>
             </div>
           </div>
-
           <div className="mt-4 divide-y divide-charcoal-800">
             {activeTemplate.shots.map((shot, index) => (
               <div
@@ -120,7 +186,6 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, 
                     <p className="text-xs text-slate-400 truncate max-w-md">{shot.guidanceText}</p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => handleSetHero(shot.id)}
@@ -133,7 +198,6 @@ export const TemplateManager: React.FC<TemplateManagerProps> = ({ dealershipId, 
                   >
                     <Star className="w-3.5 h-3.5 fill-current" />
                   </button>
-
                   <button
                     onClick={() => handleToggleRequired(shot.id)}
                     className={`px-3 py-1 rounded-lg border text-xs font-semibold transition-all ${

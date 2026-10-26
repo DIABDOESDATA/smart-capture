@@ -1,170 +1,147 @@
 import JSZip from 'jszip';
 import { VehicleCaptureSession } from '@/types/capture';
 import { Vehicle } from '@/types/vehicle';
-
-export interface ExportManifest {
-  version: '1.0';
-  generatedAt: string;
-  sessionId: string;
-  dealershipId: string;
-  vehicle: {
-    vin?: string;
-    year?: number;
-    make?: string;
-    model?: string;
-    trim?: string;
-    bodyStyle: string;
-    stockNumber?: string;
+import { getPhotoBlob } from '@/services/storage/indexedDb';
+import { EXTERIOR_ANGLES } from '@/services/references/assets';
+import { missingRequired } from '@/services/capture/sequence';
+export interface HotspotAssociation {
+  id: string;
+  targetShotCodes: string[];
+  targetPhotoIds: string[];
+}
+async function bytes(blob: Blob): Promise<ArrayBuffer> {
+  if (blob.arrayBuffer) return blob.arrayBuffer();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as ArrayBuffer);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(blob);
+  });
+}
+const csvCell = (v: unknown) =>
+  `"${String(v ?? '')
+    .replace(/"/g, '""')
+    .replace(/^[=+@-]/, "'$&")}"`;
+export function buildManifest(session: VehicleCaptureSession, vehicle: Partial<Vehicle> = {}) {
+  const shots = [...session.shots].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
+  const hero = shots.find((s) => s.isHero);
+  const hotspots: HotspotAssociation[] = [
+    ['driver-door', ['DRIVER_COCKPIT', 'FRONT_SEATS']],
+    ['dashboard', ['STEERING_DASHBOARD', 'INSTRUMENT_CLUSTER', 'INFOTAINMENT_CONSOLE']],
+    ['hood', ['ENGINE_BAY']],
+    ['trunk', ['TRUNK_CARGO']],
+  ]
+    .map(([id, codes]) => ({
+      id: id as string,
+      targetShotCodes: (codes as string[]).filter((c) => shots.some((s) => s.shotCode === c)),
+      targetPhotoIds: shots
+        .filter((s) => (codes as string[]).includes(s.shotCode))
+        .map((s) => s.shotId),
+    }))
+    .filter((h) => h.targetPhotoIds.length > 0);
+  return {
+    version: '2.0',
+    schemaVersion: 2,
+    generatedAt: new Date().toISOString(),
+    sessionId: session.id,
+    dealershipId: session.dealershipId,
+    vehicleId: session.vehicleId,
+    vehicle: { ...vehicle },
+    heroShotCode: hero?.shotCode || null,
+    totalPhotos: shots.length,
+    status: session.status,
+    containsSampleMedia: shots.some((s) => s.source === 'sample'),
+    containsUnverifiedLegacyMedia: shots.some((s) => !s.source || s.source === 'legacy_unknown'),
+    missingRequired: session.templateSnapshot
+      ? missingRequired(session.templateSnapshot, shots).map((s) => s.code)
+      : null,
+    template: session.templateSnapshot,
+    photographyStandard: session.standardSnapshot,
+    hotspots,
+    orbitSequence: { mode: 'checklist', suitableForSmooth360: false },
+    photos: shots.map((s, i) => ({
+      order: i + 1,
+      filename: `${String(i + 1).padStart(2, '0')}_${s.shotCode}.jpg`,
+      shotId: s.shotId,
+      shotCode: s.shotCode,
+      shotName: s.shotName,
+      source: s.source || 'legacy_unknown',
+      isHero: s.isHero,
+      capturedAt: s.capturedAt,
+      retakeCount: s.retakeCount,
+      quality: s.quality,
+      category: s.metadata?.category,
+      exteriorViewingAngle: s.metadata?.exteriorViewingAngle,
+      exteriorTargetAngle: s.metadata?.exteriorTargetAngle ?? EXTERIOR_ANGLES[s.shotCode],
+      ...s.metadata,
+      edits: s.edits,
+      originalFilename: s.edits ? `originals/${s.shotId}.jpg` : undefined,
+    })),
   };
-  heroShotCode: string;
-  totalPhotos: number;
-  photos: {
-    order: number;
-    filename: string;
-    shotCode: string;
-    shotName: string;
-    isHero: boolean;
-    capturedAt: string;
-    quality: {
-      blurScore: number;
-      exposure: string;
-      tiltDegrees: number;
-    };
-  }[];
 }
-
-/**
- * Helper to convert data URL or Blob to ArrayBuffer
- */
-async function dataUrlToArrayBuffer(dataUrl: string): Promise<ArrayBuffer> {
-  if (dataUrl.startsWith('data:')) {
-    const base64Index = dataUrl.indexOf(';base64,');
-    if (base64Index !== -1) {
-      const base64 = dataUrl.slice(base64Index + 8);
-      const binaryStr = atob(base64);
-      const len = binaryStr.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryStr.charCodeAt(i);
-      }
-      return bytes.buffer;
-    }
-  }
-  const res = await fetch(dataUrl);
-  return res.arrayBuffer();
-}
-
-/**
- * Generates an ordered ZIP archive with standardized dealership filenames and manifest.
- */
 export async function generateSessionZip(
   session: VehicleCaptureSession,
   vehicle: Partial<Vehicle> = {}
 ): Promise<Blob> {
-  const zip = new JSZip();
-
-  // Sort shots by sequenceOrder
-  const sortedShots = [...session.shots].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
-  const heroShot = sortedShots.find((s) => s.isHero) || sortedShots[0];
-
-  const manifestPhotos: ExportManifest['photos'] = [];
-  const csvRows: string[] = [
-    'Order,Filename,ShotCode,ShotName,IsHero,CapturedAt,BlurScore,Exposure,TiltDegrees',
+  if (!session.shots.length) throw new Error('Capture at least one photo before exporting.');
+  const zip = new JSZip(),
+    manifest = buildManifest(session, vehicle),
+    shots = [...session.shots].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
+  const rows = [
+    [
+      'Order',
+      'Filename',
+      'ShotCode',
+      'ShotName',
+      'IsHero',
+      'CapturedAt',
+      'Source',
+      'BlurScore',
+      'Exposure',
+      'TiltDegrees',
+    ]
+      .map(csvCell)
+      .join(','),
   ];
-
-  for (let i = 0; i < sortedShots.length; i++) {
-    const shot = sortedShots[i];
-    const sequenceNumber = String(i + 1).padStart(2, '0');
-    const filename = `${sequenceNumber}_${shot.shotCode}.jpg`;
-
-    try {
-      const buffer = await dataUrlToArrayBuffer(shot.imageDataUrl);
-      zip.file(filename, buffer);
-
-      manifestPhotos.push({
-        order: i + 1,
-        filename,
-        shotCode: shot.shotCode,
-        shotName: shot.shotName,
-        isHero: shot.isHero,
-        capturedAt: shot.capturedAt,
-        quality: {
-          blurScore: shot.quality.blurScore,
-          exposure: shot.quality.exposure,
-          tiltDegrees: shot.quality.tiltDegrees,
-        },
-      });
-
-      csvRows.push(
-        [
-          i + 1,
-          filename,
-          shot.shotCode,
-          `"${shot.shotName}"`,
-          shot.isHero,
-          shot.capturedAt,
-          shot.quality.blurScore,
-          shot.quality.exposure,
-          shot.quality.tiltDegrees,
-        ].join(',')
-      );
-    } catch (err) {
-      console.error(`Failed to pack shot ${filename} into zip:`, err);
-    }
+  for (let i = 0; i < shots.length; i++) {
+    const s = shots[i],
+      p = manifest.photos[i];
+    // Fail closed: a missing photo must not produce a seemingly complete package.
+    const blob = await getPhotoBlob(s);
+    zip.file(p.filename, await bytes(blob));
+    if (s.edits) zip.file(`originals/${s.shotId}.jpg`, await bytes(await getPhotoBlob(s, true)));
+    rows.push(
+      [
+        p.order,
+        p.filename,
+        s.shotCode,
+        s.shotName,
+        s.isHero,
+        s.capturedAt,
+        s.source || 'legacy_unknown',
+        s.quality.blurScore,
+        s.quality.exposure,
+        s.quality.tiltDegrees,
+      ]
+        .map(csvCell)
+        .join(',')
+    );
   }
-
-  // Construct manifest.json
-  const manifest: ExportManifest = {
-    version: '1.0',
-    generatedAt: new Date().toISOString(),
-    sessionId: session.id,
-    dealershipId: session.dealershipId,
-    vehicle: {
-      vin: vehicle.vin,
-      year: vehicle.year,
-      make: vehicle.make,
-      model: vehicle.model,
-      trim: vehicle.trim,
-      bodyStyle: vehicle.bodyStyle || 'sedan',
-      stockNumber: vehicle.stockNumber,
-    },
-    heroShotCode: heroShot?.shotCode || 'FRONT_3Q_DRIVER',
-    totalPhotos: manifestPhotos.length,
-    photos: manifestPhotos,
-  };
-
   zip.file('manifest.json', JSON.stringify(manifest, null, 2));
-  zip.file('manifest.csv', csvRows.join('\n'));
-
-  // Add README instruction file inside zip
-  const readme = [
-    '# Smart Capture Gallery Export',
-    `VIN: ${vehicle.vin || 'N/A'}`,
-    `Vehicle: ${[vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).join(' ')}`,
-    `Total Images: ${manifestPhotos.length}`,
-    `Hero Photo: ${heroShot ? `01_${heroShot.shotCode}.jpg` : 'None'}`,
-    '',
-    'Exported with standardized dealership sequence filenames for DMS inventory upload.',
-  ].join('\n');
-  zip.file('README.txt', readme);
-
-  return zip.generateAsync({
-    type: 'blob',
-    compression: 'DEFLATE',
-    compressionOptions: { level: 6 },
-  });
+  zip.file('manifest.csv', rows.join('\r\n'));
+  zip.file(
+    'README.txt',
+    `Smart Capture V2 standalone export\nVIN: ${vehicle.vin || 'Unknown'}\n${manifest.containsSampleMedia ? 'WARNING: CONTAINS SAMPLE IMAGES. NOT REAL VEHICLE PHOTOGRAPHY.\n' : ''}No cloud sync performed. Checklist images do not form a smooth 360 spin. Original files are retained for adjusted photos.\nHero: ${manifest.photos.find((p) => p.isHero)?.filename || 'Not selected'}`
+  );
+  return zip.generateAsync({ type: 'blob', compression: 'STORE' });
 }
-
-/**
- * Initiates browser file download
- */
-export function triggerFileDownload(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+export function triggerFileDownload(blob: Blob, filename: string) {
+  const u = URL.createObjectURL(blob),
+    a = document.createElement('a');
+  a.href = u;
+  a.download = filename.replace(/[<>:"/\\|?*]/g, '_');
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 30000);
 }

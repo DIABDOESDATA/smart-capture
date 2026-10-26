@@ -1,0 +1,58 @@
+[
+  {
+    "id": "original-sedan-v2",
+    "path": "public/references/sedan.png",
+    "provenance": "Original AI-generated photorealistic framing reference, built-in image_gen; not a photograph of a specific inventory vehicle.",
+    "prompt": "Use case: product-mockup. Asset type: Smart Capture original photorealistic reference sprite atlas. Create ONE square 1536x1536 transparent PNG atlas containing exactly SIX isolated studio photographic cutouts of the SAME unbranded silver sedan. NO drawings, NO SVG, NO lettering, NO backgrounds, no floor. Arrange in a precise 3-column by 2-row grid of equal square cells. Every car is fully inside its cell with a consistent 12% empty margin, centered horizontally, tire bottoms at 80% cell height. Cells in reading order: (1) front driver-side three-quarter view, front points left, (2) perfectly straight front view, (3) full driver-side profile, front points left, (4) rear driver-side three-quarter view, rear points right, (5) perfectly straight rear view, (6) realistic complete cockpit viewed from rear seats looking forwards. Realistic neutral metal, black tires, crisp automotive details, moderate camera height, no badges or text. All cells independent separated by transparent space. Genuine alpha transparency around every vehicle. This is a framing aid, not exact make/model geometry.",
+    "sha256": "eed55c4f312476e87f2bdc875f31ce3c6ba20e3ce2081780d3ee884ee9278ec7"
+  },
+  {
+    "id": "original-suv-v2",
+    "path": "public/references/suv.png",
+    "provenance": "Original AI-generated photorealistic framing reference, built-in image_gen; not a photograph of a specific inventory vehicle.",
+    "prompt": "Use case: product-mockup. Asset type: Smart Capture original photorealistic reference sprite atlas. Create ONE square 1536x1536 transparent PNG atlas containing exactly SIX isolated studio photographic cutouts of the SAME unbranded silver SUV crossover. NO drawings, NO SVG, NO lettering, NO backgrounds, no floor. Arrange in a precise 3-column by 2-row grid of equal square cells. Every car is fully inside its cell with a consistent 12% empty margin, centered horizontally, tire bottoms at 80% cell height. Cells in reading order: (1) front driver-side three-quarter view, front points left, (2) perfectly straight front view, (3) full driver-side profile, front points left, (4) rear driver-side three-quarter view, rear points right, (5) perfectly straight rear view, (6) realistic complete cockpit viewed from rear seats looking forwards. Realistic neutral metal, black tires, crisp automotive details, moderate camera height, no badges or text. All cells independent separated by transparent space. Genuine alpha transparency around every vehicle. This is a framing aid, not exact make/model geometry.",
+    "sha256": "7822983e33f2a48adeab830a715b79fe81676ed0ab5397bab282ee88d899505c"
+  },
+  {
+    "id": "original-truck-v2",
+    "path": "public/references/truck.png",
+    "provenance": "Original AI-generated photorealistic framing reference, built-in image_gen; not a photograph of a specific inventory vehicle.",
+    "prompt": "Use case: product-mockup. Asset type: Smart Capture original photorealistic reference sprite atlas. Create ONE square 1536x1536 transparent PNG atlas containing exactly SIX isolated studio photographic cutouts of the SAME unbranded silver crew-cab pickup truck. NO drawings, NO SVG, NO lettering, NO backgrounds, no floor. Arrange in a precise 3-column by 2-row grid of equal square cells. Every car is fully inside its cell with a consistent 12% empty margin, centered horizontally, tire bottoms at 80% cell height. Cells in reading order: (1) front driver-side three-quarter view, front points left, (2) perfectly straight front view, (3) full driver-side profile, front points left, (4) rear driver-side three-quarter view, rear points right, (5) perfectly straight rear view, (6) realistic complete cockpit viewed from rear seats looking forwards. Realistic neutral metal, black tires, crisp automotive details, moderate camera height, no badges or text. All cells independent separated by transparent space. Genuine alpha transparency around every vehicle. This is a framing aid, not exact make/model geometry.",
+    "sha256": "71cabeb04d66a0c788b7cd936efc6f06290769e462fbef35adc31cb7997780ec"
+  },
+  {
+    "id": "original-coupe-v2",
+    "path": "public/references/coupe.png",
+    "provenance": "Original AI-generated photorealistic framing reference, built-in image_gen; not a photograph of a specific inventory vehicle.",
+    "prompt": "Use case: product-mockup. Asset type: Smart Capture original photorealistic reference sprite atlas. Create ONE square 1536x1536 transparent PNG atlas containing exactly SIX isolated studio photographic cutouts of the SAME unbranded silver sport coupe. NO drawings, NO SVG, NO lettering, NO backgrounds, no floor. Arrange in a precise 3-column by 2-row grid of equal square cells. Every car is fully inside its cell with a consistent 12% empty margin, centered horizontally, tire bottoms at 80% cell height. Cells in reading order: (1) front driver-side three-quarter view, front points left, (2) perfectly straight front view, (3) full driver-side profile, front points left, (4) rear driver-side three-quarter view, rear points right, (5) perfectly straight rear view, (6) realistic complete cockpit viewed from rear seats looking forwards. Realistic neutral metal, black tires, crisp automotive details, moderate camera height, no badges or text. All cells independent separated by transparent space. Genuine alpha transparency around every vehicle. This is a framing aid, not exact make/model geometry.",
+    "sha256": "c80bebea7b963868c12a92206ada72fdc18686fb263b83f77c288353c16c03b0"
+  },
+  {
+    "id": "original-wagon-v2",
+    "path": "public/references/wagon.png",
+    "provenance": "Original AI-generated photorealistic framing reference, built-in image_gen; not a photograph of a specific inventory vehicle.",
+    "prompt": "Use case: product-mockup. Asset type: Smart Capture original photorealistic reference sprite atlas. Create ONE square 1536x1536 transparent PNG atlas containing exactly SIX isolated studio photographic cutouts of the SAME unbranded silver hatchback wagon. NO drawings, NO SVG, NO lettering, NO backgrounds, no floor. Arrange in a precise 3-column by 2-row grid of equal square cells. Every car is fully inside its cell with a consistent 12% empty margin, centered horizontally, tire bottoms at 80% cell height. Cells in reading order: (1) front driver-side three-quarter view, front points left, (2) perfectly straight front view, (3) full driver-side profile, front points left, (4) rear driver-side three-quarter view, rear points right, (5) perfectly straight rear view, (6) realistic complete cockpit viewed from rear seats looking forwards. Realistic neutral metal, black tires, crisp automotive details, moderate camera height, no badges or text. All cells independent separated by transparent space. Genuine alpha transparency around every vehicle. This is a framing aid, not exact make/model geometry.",
+    "sha256": "72ab74fda868d2913d57a0089c386bca9a3de94cd297af64e2c7042dd8e7f258"
+  },
+  {
+    "id": "original-convertible-v2",
+    "path": "public/references/convertible.png",
+    "provenance": "Original AI-generated photorealistic framing reference, built-in image_gen; not a photograph of a specific inventory vehicle.",
+    "prompt": "Use case: product-mockup. Asset type: Smart Capture original photorealistic reference sprite atlas. Create ONE square 1536x1536 transparent PNG atlas containing exactly SIX isolated studio photographic cutouts of the SAME unbranded silver convertible with roof down. NO drawings, NO SVG, NO lettering, NO backgrounds, no floor. Arrange in a precise 3-column by 2-row grid of equal square cells. Every car is fully inside its cell with a consistent 12% empty margin, centered horizontally, tire bottoms at 80% cell height. Cells in reading order: (1) front driver-side three-quarter view, front points left, (2) perfectly straight front view, (3) full driver-side profile, front points left, (4) rear driver-side three-quarter view, rear points right, (5) perfectly straight rear view, (6) realistic complete cockpit viewed from rear seats looking forwards. Realistic neutral metal, black tires, crisp automotive details, moderate camera height, no badges or text. All cells independent separated by transparent space. Genuine alpha transparency around every vehicle. This is a framing aid, not exact make/model geometry.",
+    "sha256": "83d2a117e4bd69c965dbbc7dfc635fde87eb714f233c7c4e29f759663eb6a4b0"
+  },
+  {
+    "id": "original-van-v2",
+    "path": "public/references/van.png",
+    "provenance": "Original AI-generated photorealistic framing reference, built-in image_gen; not a photograph of a specific inventory vehicle.",
+    "prompt": "Use case: product-mockup. Asset type: Smart Capture original photorealistic reference sprite atlas. Create ONE square 1536x1536 transparent PNG atlas containing exactly SIX isolated studio photographic cutouts of the SAME unbranded silver van minivan. NO drawings, NO SVG, NO lettering, NO backgrounds, no floor. Arrange in a precise 3-column by 2-row grid of equal square cells. Every car is fully inside its cell with a consistent 12% empty margin, centered horizontally, tire bottoms at 80% cell height. Cells in reading order: (1) front driver-side three-quarter view, front points left, (2) perfectly straight front view, (3) full driver-side profile, front points left, (4) rear driver-side three-quarter view, rear points right, (5) perfectly straight rear view, (6) realistic complete cockpit viewed from rear seats looking forwards. Realistic neutral metal, black tires, crisp automotive details, moderate camera height, no badges or text. All cells independent separated by transparent space. Genuine alpha transparency around every vehicle. This is a framing aid, not exact make/model geometry.",
+    "sha256": "0364cb804487adcf8f0248c121827dd083ec8fc71a39bb99a33f43b5a599f76b"
+  },
+  {
+    "id": "original-classic-v2",
+    "path": "public/references/classic.png",
+    "provenance": "Original AI-generated photorealistic framing reference, built-in image_gen; not a photograph of a specific inventory vehicle.",
+    "prompt": "Use case: product-mockup. Asset type: Smart Capture original photorealistic reference sprite atlas. Create ONE square 1536x1536 transparent PNG atlas containing exactly SIX isolated studio photographic cutouts of the SAME unbranded silver classic 1960s coupe. NO drawings, NO SVG, NO lettering, NO backgrounds, no floor. Arrange in a precise 3-column by 2-row grid of equal square cells. Every car is fully inside its cell with a consistent 12% empty margin, centered horizontally, tire bottoms at 80% cell height. Cells in reading order: (1) front driver-side three-quarter view, front points left, (2) perfectly straight front view, (3) full driver-side profile, front points left, (4) rear driver-side three-quarter view, rear points right, (5) perfectly straight rear view, (6) realistic complete cockpit viewed from rear seats looking forwards. Realistic neutral metal, black tires, crisp automotive details, moderate camera height, no badges or text. All cells independent separated by transparent space. Genuine alpha transparency around every vehicle. This is a framing aid, not exact make/model geometry.",
+    "sha256": "53d4785c194f8c08f0401cfae927098172e37ecc02a6cd69c97d31443cd366ef"
+  }
+]

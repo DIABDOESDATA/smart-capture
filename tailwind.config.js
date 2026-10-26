@@ -23,10 +23,10 @@ export default {
         brand: {
           amber: '#F59E0B',
           amberHover: '#D97706',
-          cyan: '#06B6D4',
+          cyan: '#E4D9C4',
           emerald: '#10B981',
           rose: '#F43F5E',
-          blue: '#3B82F6',
+          blue: '#8D877C',
         },
         hud: {
           green: '#22C55E',
@@ -53,7 +53,7 @@ export default {
         ],
       },
       boxShadow: {
-        'glow-cyan': '0 0 25px -5px rgba(6, 182, 212, 0.4)',
+        'glow-cyan': '0 0 25px -5px rgba(210, 200, 180, 0.08)',
         'glow-amber': '0 0 25px -5px rgba(245, 158, 11, 0.4)',
         'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.4)',
       },

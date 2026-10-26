@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Smart Capture — guided automotive photography and inventory media management for dealerships.",
+  "description": "Smart Capture \u2014 guided automotive photography and inventory media management for dealerships.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -15,10 +15,19 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:offline": "node scripts/offline-check.mjs",
+    "benchmark:detector": "node scripts/benchmark-detector.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
+    "@tensorflow-models/coco-ssd": "2.2.3",
+    "@tensorflow/tfjs-backend-cpu": "4.22.0",
+    "@tensorflow/tfjs-backend-webgl": "4.22.0",
+    "@tensorflow/tfjs-converter": "4.22.0",
+    "@tensorflow/tfjs-core": "4.22.0",
+    "@zxing/browser": "0.2.1",
+    "@zxing/library": "0.23.0",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "idb": "^8.0.2",
@@ -43,6 +52,7 @@
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
+    "fake-indexeddb": "6.2.6",
     "jsdom": "^26.0.0",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",

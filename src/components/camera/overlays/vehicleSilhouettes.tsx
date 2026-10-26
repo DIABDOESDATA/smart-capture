@@ -1,14 +1,12 @@
 import React from 'react';
 import { BodyStyle } from '@/types/vehicle';
 import { ShotAngle } from '@/types/template';
-
 interface SilhouetteProps {
   bodyStyle: BodyStyle;
   shotCode: ShotAngle;
   color: string;
   strokeWidth?: number;
 }
-
 /**
  * High-precision vector silhouettes engineered for automotive proportions.
  * Each silhouette reflects the exact body style roofline, hood line, and wheel placement.
@@ -53,7 +51,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       />
     </g>
   );
-
   // 1. FRONT 3/4 DRIVER (Hero Angle)
   if (shotCode === 'FRONT_3Q_DRIVER') {
     if (bodyStyle === 'truck') {
@@ -84,7 +81,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
         </svg>
       );
     }
-
     if (bodyStyle === 'suv' || bodyStyle === 'crossover') {
       return (
         <svg viewBox="0 0 400 240" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
@@ -112,7 +108,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
         </svg>
       );
     }
-
     if (bodyStyle === 'coupe') {
       return (
         <svg viewBox="0 0 400 240" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
@@ -140,7 +135,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
         </svg>
       );
     }
-
     // Default: Sedan Front 3/4 Hero
     return (
       <svg viewBox="0 0 400 240" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
@@ -168,13 +162,11 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // 2. STRAIGHT FRONT
   if (shotCode === 'STRAIGHT_FRONT') {
     const isTall = bodyStyle === 'suv' || bodyStyle === 'truck';
     const topY = isTall ? 70 : 85;
     const hoodY = isTall ? 120 : 135;
-
     return (
       <svg viewBox="0 0 400 240" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
         {/* Center vertical alignment axis */}
@@ -269,7 +261,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // 3. FRONT 3/4 PASSENGER
   if (shotCode === 'FRONT_3Q_PASSENGER') {
     return (
@@ -302,12 +293,10 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // 4. FULL PROFILE (Passenger or Driver Side)
   if (shotCode === 'PASSENGER_SIDE' || shotCode === 'DRIVER_SIDE') {
     const isTruck = bodyStyle === 'truck';
     const isSuv = bodyStyle === 'suv' || bodyStyle === 'crossover';
-
     return (
       <svg viewBox="0 0 400 240" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
         {renderHorizonAndWheelGuides(105, 295, 175)}
@@ -355,7 +344,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // 5. REAR 3/4 (Passenger or Driver Side)
   if (shotCode === 'REAR_3Q_PASSENGER' || shotCode === 'REAR_3Q_DRIVER') {
     const isMirrored = shotCode === 'REAR_3Q_DRIVER';
@@ -399,13 +387,11 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // 6. STRAIGHT REAR
   if (shotCode === 'STRAIGHT_REAR') {
     const isTall = bodyStyle === 'suv' || bodyStyle === 'truck';
     const topY = isTall ? 70 : 85;
     const trunkY = isTall ? 120 : 135;
-
     return (
       <svg viewBox="0 0 400 240" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
         <line
@@ -470,7 +456,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // 7. WHEEL & TIRE CLOSEUP
   if (shotCode === 'WHEEL_FRONT_DRIVER' || shotCode === 'WHEEL_REAR_PASSENGER') {
     return (
@@ -499,7 +484,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // 8. STEERING WHEEL & DASHBOARD
   if (shotCode === 'STEERING_DASHBOARD' || shotCode === 'DRIVER_COCKPIT') {
     return (
@@ -530,7 +514,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // 9. INSTRUMENT CLUSTER & ODOMETER
   if (shotCode === 'INSTRUMENT_CLUSTER') {
     return (
@@ -591,7 +574,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // 10. VIN PLATE / DOOR JAMB
   if (shotCode === 'VIN_DOOR_JAMB') {
     return (
@@ -631,7 +613,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // 11. ENGINE BAY
   if (shotCode === 'ENGINE_BAY') {
     return (
@@ -684,7 +665,6 @@ export const VehicleSilhouette: React.FC<SilhouetteProps> = ({
       </svg>
     );
   }
-
   // Fallback: Professional Framing Grid & Center Focus Reticle
   return (
     <svg viewBox="0 0 400 240" className="w-full h-full" preserveAspectRatio="xMidYMid meet">

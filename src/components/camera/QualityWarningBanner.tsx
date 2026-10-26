@@ -1,20 +1,17 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { QualityMetric } from '@/types/capture';
-
 interface QualityWarningBannerProps {
   quality: QualityMetric;
   onRetake: () => void;
   onKeepAnyway: () => void;
 }
-
 export const QualityWarningBanner: React.FC<QualityWarningBannerProps> = ({
   quality,
   onRetake,
   onKeepAnyway,
 }) => {
   if (quality.warnings.length === 0) return null;
-
   return (
     <div className="absolute inset-x-4 top-20 z-50 bg-charcoal-900/95 backdrop-blur-md border border-brand-amber/60 rounded-2xl p-4 shadow-2xl text-slate-100 animate-in fade-in slide-in-from-top-4 duration-200">
       <div className="flex items-start gap-3">
@@ -32,9 +29,9 @@ export const QualityWarningBanner: React.FC<QualityWarningBannerProps> = ({
             ))}
           </ul>
           <p className="text-[11px] text-slate-400 mt-2">
-            Automotive listings perform up to 40% better with sharp, well-exposed photos.
+            Inspect sharpness, exposure and visible vehicle condition before keeping this
+            photograph.
           </p>
-
           <div className="mt-3 flex items-center gap-2">
             <button
               type="button"

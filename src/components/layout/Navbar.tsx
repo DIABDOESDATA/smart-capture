@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Camera, Wifi, WifiOff, CloudUpload, Sliders, Home, PlusCircle } from 'lucide-react';
 import { Dealership, UserRole } from '@/types/dealership';
 import { getPendingUploadCount } from '@/services/storage/indexedDb';
-
 interface NavbarProps {
   currentDealership: Dealership;
   userRole: UserRole;
   currentView: 'landing' | 'dashboard' | 'new-session' | 'templates';
   onNavigate: (view: 'landing' | 'dashboard' | 'new-session' | 'templates') => void;
 }
-
 export const Navbar: React.FC<NavbarProps> = ({
   currentDealership,
   userRole,
@@ -18,14 +16,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingUploads, setPendingUploads] = useState<number>(0);
-
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-
     const checkUploads = async () => {
       try {
         const count = await getPendingUploadCount();
@@ -34,17 +29,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         // IDB not yet initialized
       }
     };
-
     checkUploads();
     const interval = setInterval(checkUploads, 5000);
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       clearInterval(interval);
     };
   }, []);
-
   return (
     <header className="sticky top-0 z-40 bg-charcoal-950/90 backdrop-blur-md border-b border-charcoal-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -67,7 +59,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </button>
         </div>
-
         {/* Navigation Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
           <button
@@ -81,7 +72,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Home className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Dashboard</span>
           </button>
-
           <button
             onClick={() => onNavigate('new-session')}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
@@ -93,7 +83,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <PlusCircle className="w-3.5 h-3.5" />
             <span>New Session</span>
           </button>
-
           <button
             onClick={() => onNavigate('templates')}
             className={`p-2 rounded-xl text-xs font-semibold transition-all ${
@@ -102,10 +91,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'text-slate-400 hover:text-white'
             }`}
             title="Dealership Templates"
+            aria-label="Dealership Templates"
           >
             <Sliders className="w-4 h-4" />
           </button>
-
           {/* Pending Upload Queue Counter */}
           {pendingUploads > 0 && (
             <div
@@ -116,17 +105,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>{pendingUploads} queued</span>
             </div>
           )}
-
           {/* Network Indicator */}
           <div
             className={`p-1.5 rounded-full ${
               isOnline ? 'text-hud-green' : 'text-hud-red bg-hud-red/20'
             }`}
-            title={isOnline ? 'Online • Cloud Sync Active' : 'Offline • Local Storage Mode'}
+            title={isOnline ? 'Online · Local photos only' : 'Offline • Local Storage Mode'}
           >
             {isOnline ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
           </div>
-
           {/* User Role Badge */}
           <span className="hidden md:inline px-2 py-0.5 rounded-md bg-charcoal-800 border border-charcoal-700 text-[10px] font-mono text-slate-300 uppercase">
             {userRole}
