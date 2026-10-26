@@ -16,7 +16,8 @@ permissions:
 jobs:
   e2e:
     name: Playwright Core E2E Tests
-    runs-on: ubuntu-latest
+    # Pin the browser environment instead of following runner OS migrations.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:

@@ -37,3 +37,7 @@ Local checks: 84 unit/component tests pass; TypeScript, ESLint and Prettier pass
 ## Install behavior references
 
 Apple's [Safari web-app instructions](https://support.apple.com/en-lamr/guide/iphone/iphea86e5236/ios) informed the iPhone install guidance. [web.dev's update lifecycle](https://web.dev/learn/pwa/update) informed the waiting-worker design. The app offers update activation only from Sessions, and the worker rejects activation if other app windows are open.
+
+## Reproducible browser runner
+
+The browser jobs remained in dependency installation for more than ten minutes on the moving ubuntu-latest image, before any tests ran. Both browser workflows now pin Ubuntu 24.04, a platform in the [Playwright support matrix](https://playwright.dev/docs/intro#system-requirements), to reduce runner-image drift. This is an infrastructure adjustment, not a relaxed test or skipped check.

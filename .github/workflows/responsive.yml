@@ -17,7 +17,8 @@ permissions:
 jobs:
   responsive-matrix:
     name: Mobile, Tablet & Foldable Viewports
-    runs-on: ubuntu-latest
+    # Pin the browser environment instead of following runner OS migrations.
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
 
     steps:
