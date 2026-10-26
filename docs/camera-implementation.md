@@ -1,56 +1,13 @@
-# Guided Camera Implementation & Mobile WebRTC
+# Camera engine V2
 
-## 1. WebRTC Camera Initialization
+Preview and capture use one center-cover transform in `services/camera/geometry.ts`. The viewfinder itself has the selected output ratio, video uses object-cover within that frame, and capture draws the same source rectangle to a canvas with no upscaling. Overlay rendering uses normalized frame coordinates and the same reference target bounds used by CV. References never enter the real-photo canvas.
 
-Smart Capture interacts directly with standard HTML5 MediaDevices APIs to initialize the device's rear-facing camera sensor:
+Rear-camera constraints request up to 3840x2880 but actual track/video dimensions determine output. This is a video-frame capture path. [W3C Image Capture](https://www.w3.org/TR/image-capture/) specifies still capture APIs, but sensor/FOV differences and platform availability require physical calibration before adding a separate still path. No exact physical distance or optical focal length is inferred.
 
-```typescript
-const constraints: MediaStreamConstraints = {
-  video: {
-    facingMode: { ideal: 'environment' },
-    width: { ideal: 2560 }, // Request high-resolution sensor feed
-    height: { ideal: 1440 },
-  },
-  audio: false,
-};
-const stream = await navigator.mediaDevices.getUserMedia(constraints);
-```
+CameraController cancels late streams and stops replaced streams. Visibility changes stop background camera work and restart on return. Interrupted tracks expose recovery. Permissions fail to a retry screen; capture is disabled until a real frame exists or sample mode is chosen explicitly. Sample media is watermarked and source-tagged.
 
-### Key Implementation Details:
-- **Environment Preference**: Mobile devices default to `facingMode: { ideal: 'environment' }` so the lot employee immediately sees the car rather than the selfie camera.
-- **Dynamic Camera Switching**: The HUD provides a quick camera switch action (`user` vs `environment`) for vehicles where interior self-facing documentation is needed.
-- **Hardware Torch / Flash**: We detect track capabilities via `track.getCapabilities()` and toggle `track.applyConstraints({ advanced: [{ torch: boolean }] })` for shaded engine bays or dark trunks.
-- **Simulator Fallback**: If permissions are denied, running in headless CI, or executed on a desktop without webcam, the engine gracefully transitions to an interactive canvas simulation rather than crashing.
+Device list, zoom, exposure, torch and touch-focus controls are exposed only when browser track capabilities support them. Touch points transform back through the crop to source-frame coordinates. Hardware behavior is pending physical mobile tests. Requested camera IDs represent browser-exposed devices, not a guarantee of optical lens labels.
 
-## 2. High-Resolution Photo Capture vs Screenshot
+Horizon uses gravity projection from orientation readings and screen rotation. Unknown, flat, stale and rotated-without-new-data states are null; no false LEVEL default. iOS motion permission is user-triggered. The sensor value is a device-roll estimate, not a detected image horizon.
 
-A common flaw in rudimentary web camera implementations is capturing low-resolution screenshots of the CSS-scaled preview element. Smart Capture captures the uncompressed native resolution buffer from the underlying `HTMLVideoElement.videoWidth` and `videoHeight` into a full-sized offscreen canvas:
-
-```typescript
-const canvas = document.createElement('canvas');
-canvas.width = videoRef.current.videoWidth;
-canvas.height = videoRef.current.videoHeight;
-const ctx = canvas.getContext('2d');
-ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-const highQualityJpeg = canvas.toDataURL('image/jpeg', 0.92);
-```
-
-The guided vector silhouette overlay is rendered as an HTML/SVG HUD layer above the video preview—it is **never burned into the exported photograph**.
-
-## 3. Real-Time Horizon & Orientation Sensors
-
-Car lot photos often look sloppy because employees hold phones tilted at 5-15 degree angles. Smart Capture reads the device's orientation sensor via the standard `DeviceOrientationEvent`:
-
-```typescript
-const handleOrientation = (e: DeviceOrientationEvent) => {
-  if (e.gamma !== null) {
-    setTiltDegrees(e.gamma);
-  }
-};
-window.addEventListener('deviceorientation', handleOrientation);
-```
-
-The HUD displays a dynamic horizon level line:
-- Rotates with device tilt.
-- Turns bright neon green (`#22C55E`) and displays a "LEVEL" indicator when level within `+/- 2.5 degrees`.
-- Issues a quality advisory if captured beyond 4.0 degrees of tilt.
+Shutter/keep calls serialize and await atomic IndexedDB commit. Failure retains review and the same shot. JPEG encoding uses 0.95 quality. Sharpness/exposure are heuristics sampled at 256x256, not a field-validated quality guarantee. Missing analysis or orientation remains unavailable in metadata.

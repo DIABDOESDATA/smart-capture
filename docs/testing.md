@@ -1,61 +1,9 @@
-# Quality Assurance & Testing Strategy
+# V2 quality assurance
 
-Smart Capture utilizes a multi-layered verification pyramid: static analysis, typechecking, unit tests, component tests, and multi-viewport end-to-end browser tests.
+Run lint, format:check, tsc --noEmit, npm test, build, test:e2e and test:offline. The offline script requires a production build and starts/stops its own preview server. Existing E2E and responsive workflows cover Chromium and WebKit viewports; the E2E workflow also verifies production offline reload.
 
-```mermaid
-flowchart TD
-    E2E["Playwright E2E & Multi-Viewport Matrix (4 Browsers)"]
-    Comp["Testing Library Component Tests (React 19)"]
-    Unit["Vitest Unit Tests (Math, Checksums, Parsers, Canvas)"]
-    Static["TypeScript Strict + ESLint 9 + Prettier"]
+Unit tests cover cover-crop/orientation, reference geometry/body variants, quality unknown states, lifecycle cancellation/denial, sequence/retakes, required shots, barcode confirmation, immutable templates, actual v1 IndexedDB migration, atomic rollback, idempotency, no fake sync and ordered manifests. Playwright covers complete 20-shot sample export/reload/resume, geometry controls/landscape, save failures, retakes/hero, real fake-device capture ratio, approved references, derivative originals and template snapshots. Camera reference screenshots have checked-in visual baselines with 4% pixel tolerance to accommodate browser/OS rasterization.
 
-    Static --> Unit
-    Unit --> Comp
-    Comp --> E2E
-```
+Windows sandbox Chromium downloads cancel even a standalone five-byte Blob. Annotated E2E verifies its download event and independently validates archive bytes; WebKit writes and unpacks actual downloads. Linux CI runs the actual-download assertion. This exception is not evidence of physical Android downloads. IndexedDB byte fallback is exercised in Windows WebKit. JSDOM storage tests validate transactions and metadata; real Blob round trips are covered by browser tests.
 
-## 1. Test Suites
-
-### 1.1 Unit Tests (Vitest)
-- `tests/unit/vinValidator.test.ts`: ISO 3779 checksum calculation, transliteration weights, Modulus 11 check digit verification, forbidden character handling, OCR substitution suggestions.
-- `tests/unit/nhtsaDecoder.test.ts`: NHTSA vPIC JSON parsing, BodyStyle inference mapping, network failure fallbacks.
-- `tests/unit/defaultTemplates.test.ts`: Master 24-shot sequence, D-Drive 20-shot inventory standard, truck bed and convertible roof adaptations.
-- `tests/unit/qualityEngine.test.ts`: Laplacian variance blur calculation, histogram luminance exposure analysis, horizon tilt level calculation, resolution checks.
-- `tests/unit/zipExporter.test.ts`: Standardized ordered ZIP archive generation, `manifest.json` and `manifest.csv` formatting.
-
-### 1.2 Component Tests (React Testing Library)
-- `tests/unit/components.test.tsx`:
-  - `OverlayControls`: HUD opacity adjustments, outline toggling, color presets, horizon guides.
-  - `QualityWarningBanner`: Advisory display with "Retake Shot" and "Keep Anyway" buttons.
-  - `VinLookupForm`: Manual vehicle entry and template assignment.
-
-### 1.3 End-to-End Tests (Playwright)
-- `tests/e2e/capture-flow.spec.ts`:
-  - End-to-end vehicle capture journey: Dashboard -> VIN Entry -> NHTSA Decode -> Body Selection -> Guided Smart Camera -> Shutter Capture -> Review Mode -> Sequence Advance -> Gallery Review -> ZIP Package Export.
-  - Tested across 4 distinct viewports:
-    - **Desktop Chrome** (1280x720)
-    - **Mobile Chrome Pixel 7** (393x851)
-    - **Mobile Safari iPhone 14** (390x844)
-    - **Tablet iPad Mini** (768x1024)
-
-## 2. Running Test Commands Locally
-
-```bash
-# Run unit & component tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run Playwright E2E tests
-npm run test:e2e
-
-# Run TypeScript typecheck
-npx tsc --noEmit
-
-# Run ESLint analysis
-npm run lint
-
-# Run code style formatting check
-npm run format:check
-```
+See [CODEX_TEST_REPORT.md](CODEX_TEST_REPORT.md) for recorded results and [PILOT_ACCEPTANCE_V2.md](PILOT_ACCEPTANCE_V2.md) for human-only tests. No browser emulation establishes real mobile image quality or complete cloud isolation.

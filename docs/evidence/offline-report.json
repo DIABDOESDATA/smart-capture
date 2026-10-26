@@ -1,0 +1,18 @@
+[
+  {
+    "engine": "chromium",
+    "offlineReload": true,
+    "photoDecoded": true,
+    "exportTriggered": true,
+    "downloadFailure": "canceled",
+    "pageErrors": []
+  },
+  {
+    "engine": "webkit",
+    "offlineReload": true,
+    "photoDecoded": true,
+    "exportTriggered": true,
+    "downloadFailure": null,
+    "pageErrors": []
+  }
+]
