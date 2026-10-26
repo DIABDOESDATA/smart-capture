@@ -34,3 +34,5 @@ Repaired preview/saved-image crop mismatch; made denied cameras non-capturing un
 ## Verification and remaining work
 
 Local test report and artifacts: `CODEX_TEST_REPORT.md` / `docs/evidence`. Physical pilot outcomes are **not run** and must be entered in `PILOT_ACCEPTANCE_V2.md`. Establish approved phone HTTPS access, compare captured files against preview, and calibrate for a sedan/SUV/pickup before calling this production ready. Do not merge or deploy without owner approval.
+
+Legacy preservation: when reconstructing a pre-V2 template without feature flags, convertible roof scenes are not appended. New sessions explicitly carry feature flags and can add those guides.

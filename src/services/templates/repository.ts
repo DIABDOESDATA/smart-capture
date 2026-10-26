@@ -35,7 +35,7 @@ export function adaptTemplate(
   for (const code of [
     features?.thirdRow ? 'THIRD_ROW' : null,
     features?.sunroof ? 'ROOF_SUNROOF' : null,
-    body === 'convertible' ? 'CONVERTIBLE_ROOF_UP' : null,
+    body === 'convertible' && features ? 'CONVERTIBLE_ROOF_UP' : null,
   ]) {
     const extra = ADDITIONAL_SHOTS.find((s) => s.code === code);
     if (extra && !shots.some((s) => s.code === code)) shots.push({ ...extra, isRequired: true });

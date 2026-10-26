@@ -266,3 +266,15 @@ describe('Reference-to-camera coordinate consistency', () => {
     expect(adapted.shots.some((s) => s.code === 'ROOF_SUNROOF')).toBe(true);
   });
 });
+
+describe('Legacy checklist preservation', () => {
+  it('does not add new roof slots to a legacy convertible without feature flags', () => {
+    const base = getDefaultTemplates()[0];
+    expect(adaptTemplate(base, 'convertible').shots).toHaveLength(20);
+    expect(
+      adaptTemplate(base, 'convertible', { rearSeats: true }).shots.some(
+        (s) => s.code === 'CONVERTIBLE_ROOF_UP'
+      )
+    ).toBe(true);
+  });
+});
