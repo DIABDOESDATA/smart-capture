@@ -150,6 +150,7 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
             <input
               type="text"
               maxLength={17}
+              aria-label="Vehicle VIN"
               placeholder="e.g. 1HGCR2F83HA000000"
               value={vinInput}
               onChange={(e) => {
@@ -213,6 +214,7 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
             <label className="block text-xs font-medium text-slate-400 mb-1">Year</label>
             <input
               type="number"
+              aria-label="Vehicle year"
               placeholder="2023"
               value={year || ''}
               onChange={(e) => setYear(parseInt(e.target.value, 10) || undefined)}
@@ -223,6 +225,7 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
             <label className="block text-xs font-medium text-slate-400 mb-1">Make</label>
             <input
               type="text"
+              aria-label="Vehicle make"
               placeholder="e.g. BMW"
               value={make}
               onChange={(e) => setMake(e.target.value)}
@@ -233,6 +236,7 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
             <label className="block text-xs font-medium text-slate-400 mb-1">Model</label>
             <input
               type="text"
+              aria-label="Vehicle model"
               placeholder="e.g. 330i xDrive"
               value={model}
               onChange={(e) => setModel(e.target.value)}
@@ -243,6 +247,7 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
             <label className="block text-xs font-medium text-slate-400 mb-1">Stock #</label>
             <input
               type="text"
+              aria-label="Stock number"
               placeholder="e.g. DD-8472"
               value={stockNumber}
               onChange={(e) => setStockNumber(e.target.value)}
@@ -263,6 +268,7 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
             )}
           </div>
           <select
+            aria-label="Vehicle body classification"
             value={bodyStyle}
             onChange={(e) => setBodyStyle(e.target.value as BodyStyle)}
             className="w-full bg-charcoal-950 border border-charcoal-700 rounded-xl px-3 py-2.5 text-sm font-medium text-white focus:outline-none focus:border-brand-cyan"

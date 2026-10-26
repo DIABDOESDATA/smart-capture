@@ -8,7 +8,7 @@ Local verification on this Windows execution host. Browser results are emulation
 | npx tsc --noEmit | PASS |
 | npm run lint | PASS, 0 errors/warnings |
 | npm run format:check | PASS (baseline failed all 29 source files) |
-| npm test | PASS, 61 tests / 9 files (baseline 21 / 6) |
+| npm test | PASS, 62 tests / 9 files (baseline 21 / 6) |
 | npm run build | PASS; optional TF runtime chunk-size warning retained |
 | npm run test:e2e | PASS, 30 passed, 2 skipped, 0 failed across desktop Chrome, Pixel 7, iPhone 14 WebKit, iPad Mini WebKit |
 | Visual regression | Four checked-in camera reference baselines; comparison run passed after baseline generation |
@@ -36,3 +36,5 @@ Quota injection retains review without advance and rolls media/session writes ba
 No test results establish actual lens quality, optical zoom, sensor orientation accuracy, outdoor visibility, CV precision/recall, employee cycle time, or multi-tenant backend isolation. Those remain pending in PILOT_ACCEPTANCE_V2.md.
 
 Final migration guard: legacy convertibles without fitted-feature flags retain their original checklist length; only new feature-aware sessions add roof-state scenes. Regression test passed.
+
+VIN correction regression: repeated scanner frames cannot overwrite an already recognized candidate while the operator edits it. Accessible vehicle field labels remain available at phone sizes.

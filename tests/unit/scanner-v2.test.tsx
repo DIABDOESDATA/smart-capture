@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { VinScannerModal } from '@/components/vehicle/VinScannerModal';
+const scanning = vi.hoisted(() => ({
+  callback: null as null | ((r: { getText: () => string }) => void),
+}));
 vi.mock('@zxing/browser', () => ({
   BrowserMultiFormatReader: class {
     async decodeFromStream(
@@ -8,6 +11,7 @@ vi.mock('@zxing/browser', () => ({
       _video: unknown,
       callback: (r: { getText: () => string }) => void
     ) {
+      scanning.callback = callback;
       callback({ getText: () => '*1HGCM82633A004352*' });
       return { stop: vi.fn() };
     }
@@ -30,5 +34,24 @@ describe('VIN recognition callback', () => {
     expect(scanned).toHaveBeenCalledWith('1HGCM82633A004352');
     view.unmount();
     expect(stop).toHaveBeenCalled();
+  });
+});
+
+describe('Stable barcode correction', () => {
+  it('does not overwrite manual corrections with repeated camera reads', async () => {
+    navigator.mediaDevices.getUserMedia = vi
+      .fn()
+      .mockResolvedValue({ getTracks: () => [{ stop: vi.fn() }] });
+    const view = render(<VinScannerModal isOpen onClose={vi.fn()} onVinScanned={vi.fn()} />);
+    await waitFor(() =>
+      expect(screen.getByLabelText('Scanned VIN')).toHaveValue('1HGCM82633A004352')
+    );
+    fireEvent.change(screen.getByLabelText('Scanned VIN'), {
+      target: { value: '1HGCM82633A004353' },
+    });
+    expect(scanning.callback).not.toBeNull();
+    scanning.callback!({ getText: () => '*1HGCM82633A004352*' });
+    expect(screen.getByLabelText('Scanned VIN')).toHaveValue('1HGCM82633A004353');
+    view.unmount();
   });
 });

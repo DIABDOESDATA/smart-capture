@@ -13,6 +13,7 @@ export function VinScannerModal({ isOpen, onClose, onVinScanned }: Props) {
   useEffect(() => {
     if (!isOpen) return;
     let active = true;
+    let candidateFound = false;
     let stream: MediaStream | undefined;
     let stop: (() => void) | undefined;
     (async () => {
@@ -37,9 +38,10 @@ export function VinScannerModal({ isOpen, onClose, onVinScanned }: Props) {
         }
         const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 250 });
         const controls = await reader.decodeFromStream(stream, video.current!, (result) => {
-          if (!active || !result) return;
+          if (!active || candidateFound || !result) return;
           const vin = barcodeVin(result.getText());
           if (vin) {
+            candidateFound = true;
             setCandidate(vin);
             setError(validateVin(vin).errors.join(' '));
           }

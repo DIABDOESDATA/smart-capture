@@ -63,6 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => onNavigate('dashboard')}
+            aria-label="Dashboard"
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
               currentView === 'dashboard'
                 ? 'bg-charcoal-800 text-white border border-charcoal-700'
