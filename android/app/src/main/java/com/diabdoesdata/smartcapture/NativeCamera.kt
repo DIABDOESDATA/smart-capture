@@ -66,6 +66,8 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
                         )
                 )
                     return
+                updateReady()
+                if (ready && observedInfo === controller.cameraInfo) return
                 // A viewport rebind can replace CameraInfo. Reattach to the controller's current
                 // info,
                 // rather than waiting forever on an observer belonging to the previous binding.
@@ -74,7 +76,11 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
                     if (
                         hasBeenReady &&
                             !repairedPreview &&
-                            controller.cameraInfo == null &&
+                            (controller.cameraInfo == null ||
+                                (!cameraOpen &&
+                                    previewStreaming &&
+                                    android.os.SystemClock.elapsedRealtime() - lastLayoutAt >=
+                                        1500)) &&
                             preview?.isAttachedToWindow == true &&
                             preview.width > 0 &&
                             preview.height > 0
@@ -83,6 +89,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
                         // A late detach from an old view can clear a newly attached viewport.
                         // Restore that surface without restarting a functioning camera/capture.
                         repairedPreview = true
+                        preview.controller = null
                         preview.controller = controller
                         controller.bindToLifecycle(owner)
                         lastLayoutAt = android.os.SystemClock.elapsedRealtime()
@@ -98,7 +105,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
                         cameraFailure(
                             "Camera preview did not start. Retry camera or copy error details.",
                             IllegalStateException(
-                                "Preview timeout: bound=${controller.cameraInfo != null}, open=$cameraOpen, streaming=$previewStreaming, lifecycle=${owner.lifecycle.currentState}"
+                                "Preview timeout: bound=${controller.cameraInfo != null}, state=${observedInfo?.cameraState?.value?.type}, open=$cameraOpen, streaming=$previewStreaming, lifecycle=${owner.lifecycle.currentState}"
                             ),
                         )
                     } else handler.postDelayed(this, 250)
@@ -112,8 +119,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
             ready = false
             return
         }
-        val state = controller.cameraInfo?.cameraState?.value
-        cameraOpen = state?.type == CameraState.Type.OPEN && state.error == null
+        if (controller.cameraInfo == null) cameraOpen = false
         previewStreaming =
             previewView?.previewStreamState?.value == PreviewView.StreamState.STREAMING
         ready =
@@ -307,11 +313,13 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         if (closed)
             return // A disposed controller's initialization may finish after its replacement.
         val info = controller.cameraInfo ?: return
+        if (observedInfo === info) return
         observedInfo?.let { old ->
             old.zoomState.removeObservers(owner)
             old.cameraState.removeObservers(owner)
         }
         observedInfo = info
+        cameraOpen = false
         hasFlash = info.hasFlashUnit()
         cameraId = Camera2CameraInfo.from(info).cameraId
         val exp = info.exposureState
@@ -653,12 +661,16 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
             info.cameraState.removeObservers(owner)
         }
         observedInfo = null
-        previewView?.previewStreamState?.removeObservers(owner)
+        val preview = previewView
+        preview?.previewStreamState?.removeObservers(owner)
         previewView = null
+        controller.tapToFocusState.removeObservers(owner)
         vinCallback = null
         attemptStartup {
             controller.clearImageAnalysisAnalyzer()
-            controller.unbind()
+            // PreviewView clears only this controller's use cases. LifecycleCameraController's
+            // unbind() calls unbindAll(), which can tear down a replacement controller's camera.
+            preview?.controller = null
         }
             .onFailure { android.util.Log.e("SmartCaptureCamera", "Camera close failed", it) }
         analysis.execute {

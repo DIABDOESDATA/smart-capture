@@ -7,7 +7,15 @@ import org.junit.Test
 class ZoomLabelTest {
     @Test
     fun ultraWideAndFractionalZoomLabelsNeverUseAnInvalidFormatFlag() {
-        mapOf(0.5f to "0.5×", 0.6f to "0.6×", 1f to "1×", 1.5f to "1.5×", 2f to "2×", 5f to "5×")
+        mapOf(
+                0.5f to "0.5×",
+                0.5425347f to "0.5×",
+                0.6f to "0.6×",
+                1f to "1×",
+                1.5f to "1.5×",
+                2f to "2×",
+                5f to "5×",
+            )
             .forEach { (zoom, expected) -> assertEquals(expected, zoomLabel(zoom)) }
     }
 
