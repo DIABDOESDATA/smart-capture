@@ -257,7 +257,7 @@ export const VinLookupForm: React.FC<VinLookupFormProps> = ({
             <input
               type="text"
               aria-label="Stock number"
-              placeholder="e.g. DD-8472"
+              placeholder="e.g. SC-1042"
               value={stockNumber}
               onChange={(e) => setStockNumber(e.target.value)}
               className="w-full bg-charcoal-950 border border-charcoal-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-cyan font-mono"

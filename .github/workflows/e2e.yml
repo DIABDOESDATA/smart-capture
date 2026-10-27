@@ -2,9 +2,9 @@ name: E2E Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/smart-capture-v3-native]
   pull_request:
-    branches: [main]
+    branches: [main, codex/smart-capture-v2]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -37,7 +37,7 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
 
       - name: Run Playwright E2E tests
-        run: npx playwright test --project=Desktop-Chrome --project=Mobile-Safari-iPhone-14
+        run: npx playwright test
         env:
           CI: true
 

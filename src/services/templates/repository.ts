@@ -6,7 +6,19 @@ import { getDefaultTemplates } from './defaultTemplates';
 export async function loadTemplates(dealer: string) {
   return (
     (await getSetting<CaptureTemplate[]>(`templates:${dealer}`)) || getDefaultTemplates(dealer)
-  );
+  ).map(standaloneTemplate);
+}
+/** Preserve legacy IDs and shot snapshots while removing the old pilot's public label. */
+export function standaloneTemplate(template: CaptureTemplate): CaptureTemplate {
+  if (template.id !== 'template-ddrive-20') return template;
+  return {
+    ...template,
+    name: template.name.replace(/D[- ]?Drive(?: Auto)?\s*/gi, '').trim(),
+    description: template.description.replace(
+      /used by D[- ]?Drive Auto inventory\.?/gi,
+      'for vehicle photography.'
+    ),
+  };
 }
 export async function persistTemplates(dealer: string, t: CaptureTemplate[]) {
   await putSetting(`templates:${dealer}`, t);

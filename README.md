@@ -1,10 +1,12 @@
-# Smart Capture V2
+# Smart Capture V3
 
-Guided automotive photography for an individual or dealership studio. **Release candidate available for physical Android/iPhone acceptance at [dealercam.diabdoesdata.com](https://dealercam.diabdoesdata.com/).** The original D Drive pilot remains supported. No D Drive production system is changed.
+The primary camera is now a **native Android application** in [`android/`](android/README.md): Kotlin, Compose, CameraX ImageCapture, direct MediaStore saving, metadata, bundled photographic guides and on-device framing. See the **Native Android** GitHub Actions workflow for the versioned owner-testing APK and emulator evidence. Physical Pixel Fold acceptance remains required; no iPhone binary or public-release certification is claimed.
+
+The V2 web studio remains available at its existing deployment and retains its stored-data compatibility. It is a separate browser implementation, not the Android camera runtime. No production website is redeployed by V3. Read the [source audit](docs/V3_AUDIT.md), [validation boundary](docs/V3_VALIDATION.md) and [native iPhone parity path](docs/V3_IOS.md).
 
 The 2026-10-26 [release review](docs/RELEASE_REVIEW.md) adds the studio interface, mobile navigation, install guidance, safe app updates, a verified offline AI pack, native file sharing, and capture/data-loss safeguards.
 
-## Try it
+## Retained V2 web studio
 
 ```sh
 npm ci
@@ -23,7 +25,7 @@ For phone testing, open **https://dealercam.diabdoesdata.com/** in Safari or Chr
 - Shared preview/capture crop for 4:3, 16:9 and 1:1; native video frame resolution, no upscaling, no burned-in guides. The screen shows the actual output resolution.
 - Rear preference, exposed camera selection, capability-gated torch/zoom/exposure/touch focus, permission retry, stream cleanup and visibility recovery. Physical behavior remains to be tested on phones.
 - Real Code39, Code128 and PDF417 recognition through lazy-loaded ZXing, confirmation/correction, manual entry and NHTSA errors without fabricated vehicle specifications.
-- Saved 8/12/20/24-shot presets; D Drive 20 defaults. Session snapshots preserve checklists. Adaptive pickup cargo, rear-seat exclusion, optional fitted third-row/sunroof and convertible roof scenes. Additional steering/door/hood/console guides can be added in Templates.
+- Saved 8/12/20/24-shot presets; Premium Inventory 20 defaults. Session snapshots and legacy IDs preserve checklists. Adaptive pickup cargo, rear-seat exclusion, optional fitted third-row/sunroof and convertible roof scenes. Additional steering/door/hood/console guides can be added in Templates.
 - Quality advisories, pause/resume, vehicle search/filter, large/swipe review, ordering, hero selection, retakes and before/after comparison.
 - Non-destructive center crop, rotation, straighten, brightness and contrast; originals remain separate and export with derivatives. No condition-hiding cleanup.
 - IndexedDB v1 migration to separate media and thumbnails; atomic saves and explicit failures, Blob/byte fallback for WebKit, storage usage/persistence requests, offline ZIP export and versioned manifests/hotspots.
@@ -37,7 +39,7 @@ For phone testing, open **https://dealercam.diabdoesdata.com/** in Safari or Chr
 | Experimental pending field calibration | Quality thresholds and reference landmarks; they are advisory, not a guarantee of listing quality or exact perspective. |
 | Planned | Vehicle segmentation/mask overlap, Y/M/M-specific licensed imagery, true optical lens identification, higher-resolution still-photo path with proven preview correspondence. |
 | Planned | Dedicated dense 360 orbit sequence, interactive viewer and 3D reconstruction. A 20-shot checklist is not a smooth spin. |
-| Disabled / blocked pending backend security work | Cloud auth/sync and D Drive integration. Credentials alone cannot activate cloud access. Existing RLS needs hardening and multi-tenant tests. |
+| Disabled / blocked pending backend security work | Cloud auth/sync and external inventory integrations. Credentials alone cannot activate cloud access. Existing RLS needs hardening and multi-tenant tests. |
 | Human acceptance required | iOS/Android real cameras, sunlight, dark/light vehicles, dealership employee usability and time per vehicle. |
 
 ## Verification

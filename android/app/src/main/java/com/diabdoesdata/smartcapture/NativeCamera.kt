@@ -1,0 +1,721 @@
+package com.diabdoesdata.smartcapture
+
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.view.Surface
+import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.core.*
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
+import androidx.camera.extensions.ExtensionMode
+import androidx.camera.extensions.ExtensionsManager
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
+import androidx.camera.view.PreviewView
+import androidx.compose.runtime.*
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
+import java.io.File
+import java.util.concurrent.Executors
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.sqrt
+
+@androidx.annotation.OptIn(
+    markerClass = [androidx.camera.camera2.interop.ExperimentalCamera2Interop::class]
+)
+class NativeCamera(private val context: Context, private val owner: LifecycleOwner) {
+    val controller = LifecycleCameraController(context)
+    private val main = ContextCompat.getMainExecutor(context)
+    private val analysis = Executors.newSingleThreadExecutor()
+    private var detector: VehicleDetector? = null
+    private var extensions: ExtensionsManager? = null
+    private var selector = CameraSelector.DEFAULT_BACK_CAMERA
+    private var analysisEnabled = false
+    private var cameraOpen = false
+    private var previewStreaming = false
+    private var configuredWide: Boolean? = null
+    private var previewView: PreviewView? = null
+    private var observedInfo: CameraInfo? = null
+    private var hasBeenReady = false
+    private var repairedPreview = false
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var lastLayoutAt = android.os.SystemClock.elapsedRealtime()
+    private var closed = false
+    private val readyLifecycleObserver =
+        androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) geometryChanging()
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_PAUSE) {
+                ready = false
+                handler.removeCallbacks(readinessCheck)
+            }
+        }
+
+    private val readinessCheck =
+        object : Runnable {
+            override fun run() {
+                if (
+                    closed ||
+                        !owner.lifecycle.currentState.isAtLeast(
+                            androidx.lifecycle.Lifecycle.State.RESUMED
+                        )
+                )
+                    return
+                updateReady()
+                if (ready && observedInfo === controller.cameraInfo) return
+                // A viewport rebind can replace CameraInfo. Reattach to the controller's current
+                // info,
+                // rather than waiting forever on an observer belonging to the previous binding.
+                attemptStartup {
+                    val preview = previewView
+                    if (
+                        hasBeenReady &&
+                            !repairedPreview &&
+                            (controller.cameraInfo == null ||
+                                (!cameraOpen &&
+                                    previewStreaming &&
+                                    android.os.SystemClock.elapsedRealtime() - lastLayoutAt >=
+                                        1500)) &&
+                            preview?.isAttachedToWindow == true &&
+                            preview.width > 0 &&
+                            preview.height > 0
+                    ) {
+                        // PreviewView.onDetachedFromWindow clears the controller's surface.
+                        // A late detach from an old view can clear a newly attached viewport.
+                        // Restore that surface without restarting a functioning camera/capture.
+                        repairedPreview = true
+                        preview.controller = null
+                        preview.controller = controller
+                        controller.bindToLifecycle(owner)
+                        lastLayoutAt = android.os.SystemClock.elapsedRealtime()
+                    }
+                    observe()
+                    updateReady()
+                }
+                    .onFailure {
+                        cameraFailure("Camera unavailable. Retry camera or copy error details.", it)
+                    }
+                if (!ready && error == null) {
+                    if (android.os.SystemClock.elapsedRealtime() - lastLayoutAt >= 15_000) {
+                        cameraFailure(
+                            "Camera preview did not start. Retry camera or copy error details.",
+                            IllegalStateException(
+                                "Preview timeout: bound=${controller.cameraInfo != null}, state=${observedInfo?.cameraState?.value?.type}, open=$cameraOpen, streaming=$previewStreaming, lifecycle=${owner.lifecycle.currentState}"
+                            ),
+                        )
+                    } else handler.postDelayed(this, 250)
+                }
+            }
+        }
+
+    private fun updateReady() {
+        val wasReady = ready
+        if (closed) {
+            ready = false
+            return
+        }
+        if (controller.cameraInfo == null) cameraOpen = false
+        previewStreaming =
+            previewView?.previewStreamState?.value == PreviewView.StreamState.STREAMING
+        ready =
+            !closed &&
+                cameraOpen &&
+                previewStreaming &&
+                android.os.SystemClock.elapsedRealtime() - lastLayoutAt >= 500 &&
+                owner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+        if (ready) {
+            hasBeenReady = true
+            error = null
+            failure = null
+        } else if (
+            wasReady &&
+                owner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+        ) {
+            geometryChanging()
+        }
+    }
+
+    private fun geometryChanging() {
+        lastLayoutAt = android.os.SystemClock.elapsedRealtime()
+        repairedPreview = false
+        ready = false
+        handler.removeCallbacks(readinessCheck)
+        handler.postDelayed(readinessCheck, 510)
+    }
+
+    @Volatile private var vinCallback: ((String) -> Unit)? = null
+    private val scanning = java.util.concurrent.atomic.AtomicBoolean(false)
+    @Volatile private var barcodeScanner: com.google.mlkit.vision.barcode.BarcodeScanner? = null
+
+    var failure by mutableStateOf<Throwable?>(null)
+        private set
+
+    private fun cameraFailure(action: String, cause: Throwable) {
+        android.util.Log.e("SmartCaptureCamera", action, cause)
+        failure = cause
+        error = action
+        ready = false
+    }
+
+    var ready by mutableStateOf(false)
+        private set
+
+    var error by mutableStateOf<String?>(null)
+        private set
+
+    var flash by mutableIntStateOf(ImageCapture.FLASH_MODE_OFF)
+        private set
+
+    var hasFlash by mutableStateOf(false)
+        private set
+
+    var minZoom by mutableFloatStateOf(1f)
+        private set
+
+    var maxZoom by mutableFloatStateOf(1f)
+        private set
+
+    var zoom by mutableFloatStateOf(1f)
+        private set
+
+    var exposureMin by mutableIntStateOf(0)
+        private set
+
+    var exposureMax by mutableIntStateOf(0)
+        private set
+
+    var exposure by mutableIntStateOf(0)
+        private set
+
+    var cameraId by mutableStateOf<String?>(null)
+        private set
+
+    var cameraIds by mutableStateOf(emptyList<String>())
+        private set
+
+    var hdrAvailable by mutableStateOf(false)
+        private set
+
+    var hdr by mutableStateOf(false)
+        private set
+
+    var focusState by mutableIntStateOf(CameraController.TAP_TO_FOCUS_NOT_STARTED)
+        private set
+
+    var detectionAvailable by mutableStateOf(true)
+        private set
+
+    var frameKey = ""
+    var onDetection: ((String, VehicleBox?) -> Unit)? = null
+
+    init {
+        owner.lifecycle.addObserver(readyLifecycleObserver)
+        attemptStartup {
+            controller.imageCaptureMode = ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY
+            controller.imageCaptureFlashMode = flash
+            controller.imageAnalysisBackpressureStrategy = ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
+            controller.setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+            ratio(false)
+        }
+            .onFailure {
+                cameraFailure("Camera setup failed. Retry camera or copy error details.", it)
+            }
+        controller.initializationFuture.addListener(
+            {
+                runCatching {
+                    controller.initializationFuture.get()
+                    val providerFuture = ProcessCameraProvider.getInstance(context)
+                    providerFuture.addListener(
+                        {
+                            runCatching {
+                                val provider = providerFuture.get()
+                                cameraIds =
+                                    provider.availableCameraInfos
+                                        .filter { it.lensFacing == CameraSelector.LENS_FACING_BACK }
+                                        .map { Camera2CameraInfo.from(it).cameraId }
+                                val ext = ExtensionsManager.getInstanceAsync(context, provider)
+                                ext.addListener(
+                                    {
+                                        runCatching {
+                                            extensions = ext.get()
+                                            hdrAvailable =
+                                                extensions?.isExtensionAvailable(
+                                                    selector,
+                                                    ExtensionMode.HDR,
+                                                ) == true
+                                        }
+                                    },
+                                    main,
+                                )
+                            }
+                        },
+                        main,
+                    )
+                    observe()
+                }
+                    .onFailure {
+                        cameraFailure("Camera unavailable. Retry camera or copy error details.", it)
+                    }
+            },
+            main,
+        )
+        controller.tapToFocusState.observe(owner) { focusState = it }
+    }
+
+    fun connect(preview: PreviewView) {
+        if (previewView !== preview) {
+            previewView?.previewStreamState?.removeObservers(owner)
+            // Disconnect before attaching the replacement. Otherwise the old view's late
+            // onDetachedFromWindow can clear the new view's controller binding.
+            previewView?.controller = null
+        }
+        previewView = preview
+        preview.keepScreenOn = true
+        preview.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+        preview.scaleType = PreviewView.ScaleType.FIT_CENTER
+        preview.addOnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->
+            if (r - l != oldR - oldL || b - t != oldB - oldT) geometryChanging()
+        }
+        preview.previewStreamState.observe(owner) { state ->
+            previewStreaming = state == PreviewView.StreamState.STREAMING
+            updateReady()
+        }
+        attemptStartup { preview.controller = controller }
+            .onSuccess { bind() }
+            .onFailure {
+                cameraFailure(
+                    "Cannot start camera preview. Retry camera or copy error details.",
+                    it,
+                )
+            }
+    }
+
+    fun bind() {
+        if (closed) return
+        runCatching {
+            error = null
+            failure = null
+            controller.bindToLifecycle(owner)
+            observe()
+            geometryChanging()
+        }
+            .onFailure {
+                cameraFailure("Cannot open camera. Retry camera or copy error details.", it)
+            }
+    }
+
+    private fun observe() {
+        if (closed)
+            return // A disposed controller's initialization may finish after its replacement.
+        val info = controller.cameraInfo ?: return
+        if (observedInfo === info) return
+        observedInfo?.let { old ->
+            old.zoomState.removeObservers(owner)
+            old.cameraState.removeObservers(owner)
+        }
+        observedInfo = info
+        cameraOpen = false
+        hasFlash = info.hasFlashUnit()
+        cameraId = Camera2CameraInfo.from(info).cameraId
+        val exp = info.exposureState
+        exposureMin = exp.exposureCompensationRange.lower
+        exposureMax = exp.exposureCompensationRange.upper
+        exposure = exp.exposureCompensationIndex
+        info.zoomState.removeObservers(owner)
+        info.zoomState.observe(owner) { z ->
+            minZoom = z.minZoomRatio
+            maxZoom = z.maxZoomRatio
+            zoom = z.zoomRatio
+        }
+        info.cameraState.removeObservers(owner)
+        info.cameraState.observe(owner) { s ->
+            cameraOpen = s.type == CameraState.Type.OPEN && s.error == null
+            updateReady()
+            error =
+                s.error?.let {
+                    "Camera unavailable (${it.code}). Close other camera apps and retry."
+                }
+        }
+    }
+
+    fun ratio(wide: Boolean) {
+        if (configuredWide == wide) return
+        attemptStartup {
+            controller.imageCaptureResolutionSelector =
+                ResolutionSelector.Builder()
+                    .setAspectRatioStrategy(
+                        if (wide) AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY
+                        else AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY
+                    )
+                    .setResolutionStrategy(ResolutionStrategy.HIGHEST_AVAILABLE_STRATEGY)
+                    .build()
+        }
+            .onSuccess { configuredWide = wide }
+            .onFailure {
+                cameraFailure("Photo format unavailable. Retry camera or copy error details.", it)
+            }
+    }
+
+    fun changeZoom(value: Float) {
+        runCatching { controller.setZoomRatio(value.coerceIn(minZoom, maxZoom)) }
+            .onFailure { error = it.message }
+    }
+
+    fun cycleFlash() {
+        if (!hasFlash) return
+        flash =
+            when (flash) {
+                ImageCapture.FLASH_MODE_OFF -> ImageCapture.FLASH_MODE_AUTO
+                ImageCapture.FLASH_MODE_AUTO -> ImageCapture.FLASH_MODE_ON
+                else -> ImageCapture.FLASH_MODE_OFF
+            }
+        controller.imageCaptureFlashMode = flash
+    }
+
+    fun changeExposure(value: Int) {
+        controller.cameraControl
+            ?.setExposureCompensationIndex(value.coerceIn(exposureMin, exposureMax))
+            ?.let { f ->
+                f.addListener(
+                    {
+                        runCatching { exposure = f.get() }
+                            .onFailure { e ->
+                                val cause =
+                                    (e as? java.util.concurrent.ExecutionException)?.cause ?: e
+                                // Dragging the slider supersedes earlier requests; cancellation is
+                                // normal.
+                                if (cause !is CameraControl.OperationCanceledException)
+                                    error = "Exposure unavailable"
+                            }
+                    },
+                    main,
+                )
+            }
+    }
+
+    fun switchCamera(id: String) {
+        if (id !in cameraIds) return
+        runCatching {
+            selector =
+                CameraSelector.Builder()
+                    .addCameraFilter { infos ->
+                        infos.filter { Camera2CameraInfo.from(it).cameraId == id }
+                    }
+                    .build()
+            hdr = false
+            controller.cameraSelector = selector
+            hdrAvailable = extensions?.isExtensionAvailable(selector, ExtensionMode.HDR) == true
+            configureAnalysis(analysisEnabled)
+            observe()
+        }
+            .onFailure {
+                error = "Lens unavailable. ${it.message}"
+                selector = CameraSelector.DEFAULT_BACK_CAMERA
+                controller.cameraSelector = selector
+                observe()
+            }
+    }
+
+    fun enableHdr(enabled: Boolean) {
+        if (enabled && !hdrAvailable) return
+        runCatching {
+            hdr = enabled
+            controller.setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+            controller.cameraSelector =
+                if (enabled)
+                    requireNotNull(extensions)
+                        .getExtensionEnabledCameraSelector(selector, ExtensionMode.HDR)
+                else selector
+            configureAnalysis(analysisEnabled)
+            observe()
+        }
+            .onFailure {
+                hdr = false
+                controller.cameraSelector = selector
+                configureAnalysis(analysisEnabled)
+                error = "HDR unavailable; using standard photo"
+            }
+    }
+
+    fun configureAnalysis(enabled: Boolean) {
+        analysisEnabled = enabled
+        if ((!enabled && vinCallback == null) || hdr) {
+            attemptStartup {
+                controller.clearImageAnalysisAnalyzer()
+                controller.setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+            }
+                .onFailure {
+                    cameraFailure("Camera setup failed. Retry camera or copy error details.", it)
+                }
+            return
+        }
+        runCatching {
+            if (vinCallback == null && detector == null)
+                detector =
+                    VehicleDetector(context) { box ->
+                        val key = deliveryKey
+                        main.execute { onDetection?.invoke(key, box) }
+                    }
+            controller.setImageAnalysisAnalyzer(
+                analysis,
+                object : ImageAnalysis.Analyzer {
+                    override fun analyze(image: ImageProxy) {
+                        if (vinCallback != null) {
+                            scanFrame(image)
+                            return
+                        }
+                        val key = frameKey
+                        // Snapshot before processing; an old result can never be relabeled as a new
+                        // shot.
+                        val d = detector
+                        if (d == null) image.close()
+                        else {
+                            val previous = deliveryKey
+                            deliveryKey = key
+                            try {
+                                d.analyze(image)
+                            } finally {
+                                deliveryKey = previous
+                            }
+                        }
+                    }
+                },
+            )
+            controller.setEnabledUseCases(
+                CameraController.IMAGE_CAPTURE or CameraController.IMAGE_ANALYSIS
+            )
+        }
+            .onFailure {
+                detectionAvailable = false
+                attemptStartup {
+                    controller.clearImageAnalysisAnalyzer()
+                    controller.setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+                }
+                    .onFailure {
+                        cameraFailure(
+                            "Camera setup failed. Retry camera or copy error details.",
+                            it,
+                        )
+                    }
+            }
+    }
+
+    @Volatile private var deliveryKey = ""
+
+    fun startVinScan(callback: (String) -> Unit): Boolean {
+        val scanner = attemptStartup {
+            barcodeScanner
+                ?: com.google.mlkit.vision.barcode.BarcodeScanning.getClient(
+                    com.google.mlkit.vision.barcode.BarcodeScannerOptions.Builder()
+                        .setBarcodeFormats(
+                            com.google.mlkit.vision.barcode.common.Barcode.FORMAT_CODE_39,
+                            com.google.mlkit.vision.barcode.common.Barcode.FORMAT_CODE_128,
+                            com.google.mlkit.vision.barcode.common.Barcode.FORMAT_PDF417,
+                        )
+                        .build()
+                )
+        }
+        if (scanner.isFailure) {
+            android.util.Log.e(
+                "SmartCaptureCamera",
+                "VIN scanner unavailable",
+                scanner.exceptionOrNull(),
+            )
+            return false
+        }
+        barcodeScanner = scanner.getOrThrow()
+        if (hdr) enableHdr(false)
+        vinCallback = callback
+        configureAnalysis(analysisEnabled)
+        return true
+    }
+
+    fun stopVinScan() {
+        vinCallback = null
+        configureAnalysis(analysisEnabled)
+    }
+
+    @androidx.annotation.OptIn(markerClass = [androidx.camera.core.ExperimentalGetImage::class])
+    private fun scanFrame(image: ImageProxy) {
+        if (!scanning.compareAndSet(false, true)) {
+            image.close()
+            return
+        }
+        val media = image.image
+        if (media == null) {
+            scanning.set(false)
+            image.close()
+            return
+        }
+        val scanner = barcodeScanner
+        if (scanner == null) {
+            image.close()
+            scanning.set(false)
+            return
+        }
+        attemptStartup {
+            scanner
+                .process(
+                    com.google.mlkit.vision.common.InputImage.fromMediaImage(
+                        media,
+                        image.imageInfo.rotationDegrees,
+                    )
+                )
+                .addOnSuccessListener(main) { codes ->
+                    val vin =
+                        codes
+                            .mapNotNull { it.rawValue }
+                            .map(CaptureRules::normalizeVin)
+                            .firstOrNull(CaptureRules::validVin)
+                    if (vin != null) vinCallback?.invoke(vin)
+                }
+                .addOnCompleteListener {
+                    image.close()
+                    scanning.set(false)
+                }
+        }
+            .onFailure {
+                image.close()
+                scanning.set(false)
+                android.util.Log.e("SmartCaptureCamera", "VIN frame unavailable", it)
+            }
+    }
+
+    fun capture(file: File, callback: (Result<Unit>) -> Unit) {
+        var delivered = false
+        fun finish(result: Result<Unit>) {
+            if (!delivered) {
+                delivered = true
+                callback(result)
+            }
+        }
+        fun request(retries: Int, deadline: Long) {
+            if (delivered) return
+            if (closed) {
+                finish(
+                    Result.failure(IllegalStateException("Camera closed before capture completed"))
+                )
+                return
+            }
+            updateReady()
+            if (!ready) {
+                if (android.os.SystemClock.elapsedRealtime() >= deadline)
+                    finish(
+                        Result.failure(
+                            IllegalStateException(
+                                "Camera is not ready. Return to the camera and retry."
+                            )
+                        )
+                    )
+                else handler.postDelayed({ request(retries, deadline) }, 100)
+                return
+            }
+            fun retryOrFinish(error: Throwable) {
+                // CameraX can abort a still while its viewport/session is being reconfigured.
+                // A nonempty original is always retained; never silently overwrite it.
+                val transient =
+                    (error is ImageCaptureException &&
+                        error.imageCaptureError == ImageCapture.ERROR_CAMERA_CLOSED) ||
+                        error is IllegalStateException
+                if (transient && retries > 0 && file.length() == 0L) {
+                    geometryChanging()
+                    handler.postDelayed(
+                        { request(retries - 1, android.os.SystemClock.elapsedRealtime() + 6000) },
+                        510,
+                    )
+                } else finish(Result.failure(error))
+            }
+            runCatching {
+                    controller.takePicture(
+                        ImageCapture.OutputFileOptions.Builder(file).build(),
+                        main,
+                        object : ImageCapture.OnImageSavedCallback {
+                            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                finish(Result.success(Unit))
+                            }
+
+                            override fun onError(exception: ImageCaptureException) {
+                                retryOrFinish(exception)
+                            }
+                        },
+                    )
+                }
+                .onFailure(::retryOrFinish)
+        }
+        request(2, android.os.SystemClock.elapsedRealtime() + 6000)
+    }
+
+    fun close() {
+        if (closed) return
+        closed = true
+        ready = false
+        handler.removeCallbacks(readinessCheck)
+        owner.lifecycle.removeObserver(readyLifecycleObserver)
+        observedInfo?.let { info ->
+            info.zoomState.removeObservers(owner)
+            info.cameraState.removeObservers(owner)
+        }
+        observedInfo = null
+        val preview = previewView
+        preview?.previewStreamState?.removeObservers(owner)
+        previewView = null
+        controller.tapToFocusState.removeObservers(owner)
+        vinCallback = null
+        attemptStartup {
+            controller.clearImageAnalysisAnalyzer()
+            // PreviewView clears only this controller's use cases. LifecycleCameraController's
+            // unbind() calls unbindAll(), which can tear down a replacement controller's camera.
+            preview?.controller = null
+        }
+            .onFailure { android.util.Log.e("SmartCaptureCamera", "Camera close failed", it) }
+        analysis.execute {
+            detector?.close()
+            detector = null
+            barcodeScanner?.close()
+            barcodeScanner = null
+        }
+        analysis.shutdown()
+    }
+}
+
+class LevelReader(
+    context: Context,
+    private val rotation: () -> Int,
+    private val callback: (Float?, Long) -> Unit,
+) : SensorEventListener {
+    private val manager = context.getSystemService(SensorManager::class.java)
+    private val sensor = manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+    fun start() {
+        sensor?.let { manager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
+    }
+
+    fun stop() {
+        manager.unregisterListener(this)
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    override fun onSensorChanged(event: SensorEvent) {
+        val x = event.values[0]
+        val y = event.values[1]
+        val z = event.values[2]
+        val upright = sqrt(x * x + y * y) > 4f && abs(z) < 8f
+        val (sx, sy) =
+            when (rotation()) {
+                Surface.ROTATION_90 -> -y to x
+                Surface.ROTATION_180 -> -x to -y
+                Surface.ROTATION_270 -> y to -x
+                else -> x to y
+            }
+        callback(
+            if (upright) Math.toDegrees(atan2(sx.toDouble(), sy.toDouble())).toFloat() else null,
+            android.os.SystemClock.elapsedRealtime(),
+        )
+    }
+}

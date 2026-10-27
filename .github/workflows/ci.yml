@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/smart-capture-v3-native]
   pull_request:
-    branches: [main]
+    branches: [main, codex/smart-capture-v2]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

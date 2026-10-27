@@ -301,9 +301,9 @@ export function getDefaultTemplates(dealershipId: string = 'default'): CaptureTe
   return [
     {
       id: 'template-ddrive-20',
-      name: 'D-Drive Premium Inventory (20 Shots)',
+      name: 'Premium Inventory (20 Shots)',
       dealershipId,
-      description: 'Standard 20-photo professional sequence used by D-Drive Auto inventory.',
+      description: 'A complete 20-photo professional vehicle sequence.',
       bodyStyle: 'sedan',
       aspectRatio: '4:3',
       targetResolutionWidth: 2048,

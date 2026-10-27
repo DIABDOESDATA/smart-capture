@@ -12,6 +12,7 @@ export default [
       'playwright-report/**',
       'test-results/**',
       'coverage/**',
+      'android/**/build/**',
       '*.config.js',
       '*.config.d.ts',
       '*.d.ts',

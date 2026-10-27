@@ -46,3 +46,12 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+
+# Native Android outputs and signing material
+android/.gradle/
+android/.kotlin/
+android/**/build/
+android/local.properties
+*.jks
+*.keystore
+*.p12
