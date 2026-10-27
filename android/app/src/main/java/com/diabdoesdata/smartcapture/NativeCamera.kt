@@ -193,6 +193,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     }
 
     fun bind() {
+        if (closed) return
         runCatching {
             error = null
             controller.bindToLifecycle(owner)
@@ -205,6 +206,8 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     }
 
     private fun observe() {
+        if (closed)
+            return // A disposed controller's initialization may finish after its replacement.
         val info = controller.cameraInfo ?: return
         hasFlash = info.hasFlashUnit()
         cameraId = Camera2CameraInfo.from(info).cameraId
@@ -477,6 +480,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     }
 
     fun close() {
+        if (closed) return
         closed = true
         ready = false
         owner.lifecycle.removeObserver(readyLifecycleObserver)

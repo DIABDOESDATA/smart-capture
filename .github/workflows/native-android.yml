@@ -23,6 +23,8 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
       - name: Restore owner preview signing identity
         env:
           SC_PREVIEW_KEYSTORE: ${{ secrets.SC_PREVIEW_KEYSTORE }}
