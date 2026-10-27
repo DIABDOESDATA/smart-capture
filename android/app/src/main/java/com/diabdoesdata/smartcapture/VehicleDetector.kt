@@ -39,9 +39,15 @@ class VehicleDetector(context:Context,private val result:(VehicleBox?)->Unit):Im
             val r=image.cropRect
             val transform=Matrix().apply { postRotate(image.imageInfo.rotationDegrees.toFloat()) }
             upright=Bitmap.createBitmap(full,r.left,r.top,r.width(),r.height(),transform,true)
-            val w=upright.width.toFloat();val h=upright.height.toFloat()
+            result(detect(upright,now))
+        } catch(_:Exception) { result(null) }
+        finally { if(upright!=null && upright!==full)upright.recycle();full?.recycle();image.close() }
+    }
+    /** Also exercised against real photographic fixtures in Android instrumentation. */
+    fun detect(bitmap:Bitmap,now:Long=android.os.SystemClock.elapsedRealtime()):VehicleBox? {
+            val w=bitmap.width.toFloat();val h=bitmap.height.toFloat()
             val scale=minOf(320f/w,320f/h);val dx=(320-w*scale)/2;val dy=(320-h*scale)/2
-            Canvas(target).apply { drawColor(Color.BLACK);drawBitmap(upright,null,RectF(dx,dy,dx+w*scale,dy+h*scale),Paint(Paint.FILTER_BITMAP_FLAG)) }
+            Canvas(target).apply { drawColor(Color.BLACK);drawBitmap(bitmap,null,RectF(dx,dy,dx+w*scale,dy+h*scale),Paint(Paint.FILTER_BITMAP_FLAG)) }
             target.getPixels(pixels,0,320,0,0,320,320);input.rewind()
             pixels.forEach { p -> input.put((p shr 16 and 255).toByte());input.put((p shr 8 and 255).toByte());input.put((p and 255).toByte()) }
             input.rewind();interpreter.runForMultipleInputsOutputs(arrayOf(input),outputs)
@@ -51,9 +57,7 @@ class VehicleDetector(context:Context,private val result:(VehicleBox?)->Unit):Im
                 VehicleBox(((b[1]*320-dx)/(w*scale)).coerceIn(0f,1f),((b[0]*320-dy)/(h*scale)).coerceIn(0f,1f),
                     ((b[3]*320-dx)/(w*scale)).coerceIn(0f,1f),((b[2]*320-dy)/(h*scale)).coerceIn(0f,1f),scores[0][i],now)
             }
-            result(box)
-        } catch(_:Exception) { result(null) }
-        finally { if(upright!=null && upright!==full)upright.recycle();full?.recycle();image.close() }
+            return box
     }
     override fun close(){interpreter.close();target.recycle()}
 }

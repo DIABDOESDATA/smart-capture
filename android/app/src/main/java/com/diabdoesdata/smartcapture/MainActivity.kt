@@ -123,8 +123,8 @@ class MainActivity:ComponentActivity() {
             val provider=if(manager.isProviderEnabled(LocationManager.GPS_PROVIDER))LocationManager.GPS_PROVIDER else LocationManager.NETWORK_PROVIDER
             runCatching {
                 @Suppress("MissingPermission")
-                LocationManagerCompat.getCurrentLocation(manager,provider,null,ContextCompat.getMainExecutor(context)){fix ->
-                    location=usableLocation(fix);locationText=if(location==null)"No recent location — GPS omitted" else "Location ready · ${fix?.accuracy?.toInt()} m"
+                LocationManagerCompat.getCurrentLocation(manager,provider,android.os.CancellationSignal(),ContextCompat.getMainExecutor(context)){fix:Location? ->
+                    if(vm.geotag){location=usableLocation(fix);locationText=if(location==null)"No recent location — GPS omitted" else "Location ready · ${fix?.accuracy?.toInt()} m"}
                 }
             }.onFailure { location=null;locationText="Location unavailable — GPS omitted" }
             delay(45_000)
@@ -134,7 +134,7 @@ class MainActivity:ComponentActivity() {
     val filter=remember { GuidanceFilter() }
     val configuration=LocalConfiguration.current
     val landscape=configuration.screenWidthDp>configuration.screenHeightDp
-    val frameKey="${vm.active?.id}:${vm.shot?.code}:${configuration.orientation}:${camera?.cameraId}:${camera?.zoom}:${vm.ratioWide}"
+    val frameKey="${vm.active?.id}:${vm.shot?.code}:${configuration.orientation}:${view.display?.rotation}:${camera?.cameraId}:${camera?.zoom}:${vm.ratioWide}"
     LaunchedEffect(frameKey){detected=null;filter.reset(frameKey);camera?.frameKey=frameKey;vm.loadReference()}
     SideEffect { camera?.onDetection={key,box -> detected=filter.update(key,box,android.os.SystemClock.elapsedRealtime())} }
     LaunchedEffect(camera,vm.shot?.detectorEligible,vm.active?.demo){camera?.configureAnalysis(vm.shot?.detectorEligible==true)}
