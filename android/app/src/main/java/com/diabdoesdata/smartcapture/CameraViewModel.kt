@@ -269,7 +269,7 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
                 busy = false
                 return@launch
             }
-            val vehicle = session?.let { Vehicle.parse(it.vehicle) } ?: Vehicle()
+            val vehicle = session?.let { Vehicle.parse(it.vehicle) } ?: Vehicle(body = "")
             val metadata =
                 captureMetadata(
                         vehicle,

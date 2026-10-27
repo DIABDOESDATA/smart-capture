@@ -95,6 +95,8 @@ class NativeCameraTest {
             assertTrue(exif.getAttribute(ExifInterface.TAG_SOFTWARE)!!.startsWith("Smart Capture"))
             val metadata = JSONObject(exif.getAttribute(ExifInterface.TAG_USER_COMMENT)!!)
             assertEquals("QUICK_CAMERA", metadata.getString("shotCode"))
+            assertEquals("", metadata.getJSONObject("vehicle").getString("bodyStyle"))
+            assertEquals("", metadata.getJSONObject("vehicle").getString("vin"))
             assertFalse(metadata.has("location"))
         }
         ui.runOnUiThread {
