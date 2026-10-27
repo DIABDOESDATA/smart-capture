@@ -268,7 +268,14 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
                 f.addListener(
                     {
                         runCatching { exposure = f.get() }
-                            .onFailure { error = "Exposure unavailable" }
+                            .onFailure { e ->
+                                val cause =
+                                    (e as? java.util.concurrent.ExecutionException)?.cause ?: e
+                                // Dragging the slider supersedes earlier requests; cancellation is
+                                // normal.
+                                if (cause !is CameraControl.OperationCanceledException)
+                                    error = "Exposure unavailable"
+                            }
                     },
                     main,
                 )
