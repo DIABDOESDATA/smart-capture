@@ -45,6 +45,7 @@ fun SessionSheet(
     onGallery: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
+    val latestDraft by rememberUpdatedState(draft)
     var decoding by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var extended by remember { mutableStateOf(false) }
@@ -133,12 +134,16 @@ fun SessionSheet(
                         decoding = true
                         error = null
                         val vin = draft.vin
+                        val request = draft
                         scope.launch {
-                            runCatching { decodeVin(vin, draft) }
-                                .onSuccess { if (draft.vin == vin) onDraft(it) }
+                            runCatching { decodeVin(vin, request) }
+                                .onSuccess {
+                                    onDraft(CaptureRules.mergeDecoded(request, it, latestDraft))
+                                }
                                 .onFailure {
-                                    error =
-                                        "VIN lookup unavailable. Enter details manually or continue without them."
+                                    if (latestDraft.vin == vin)
+                                        error =
+                                            "VIN lookup unavailable. Enter details manually or continue without them."
                                 }
                             decoding = false
                         }

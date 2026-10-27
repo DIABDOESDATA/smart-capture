@@ -1,0 +1,11 @@
+# Shortest iPhone parity path
+
+Android approval comes first. There is no iPhone binary in this milestone; an Android APK cannot install on iOS.
+
+1. Create an owner-approved SwiftUI iOS target in this repository using Xcode on a Mac. Reuse `shared/catalog.v3.json`, photographic sources, crop/anchor calibration, shot codes, nominal angles and metadata schema. Use SwiftData/SQLite for sessions and a durable capture journal. Do not copy Android content URIs into iOS as usable asset identifiers.
+2. Build the same camera-first layout with a retained `AVCaptureSession`, `AVCaptureVideoPreviewLayer` and `AVCapturePhotoOutput`. Request supported photo dimensions, preserve the actual output, and use Apple's rotation coordinator / preview-layer conversion for matching reference and capture coordinates. Expose only supported lenses, flash, focus and exposure. Measure hardware behavior instead of claiming Pixel or Apple Camera processing parity.
+3. Publish originals through PhotoKit (`PHPhotoLibrary.performChanges` and `PHAssetCreationRequest`), request add-only photo access, save the resulting local identifier and only then advance. If a custom album needs broader access, keep default saving functional with add-only access. Use ImageIO to supplement EXIF descriptions and known metadata without rendering captions into pixels. CoreLocation geotags remain optional and require a fresh real fix. Verify Apple Photos display separately.
+4. Port the same confidence/context/guidance rules. Use the licensed LiteRT iOS runtime or validate a converted Core ML model with identical framing fixtures. Do not claim interior understanding. Keep photographic manual guides available offline.
+5. Run simulator rotation/layout/persistence tests, then physical iPhone camera/PhotoKit/GPS/thermal and 20–30-photo sessions. Configure owner signing and distribute an approved build through TestFlight. An Apple developer account, Mac/Xcode and physical iPhones are required; none is assumed provisioned here.
+
+PhotoKit/CoreLocation APIs and entitlement/signing requirements should be rechecked against Apple's current documentation when implementing. No speculative iOS completion date or untested processing parity is promised.

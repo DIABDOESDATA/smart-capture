@@ -1,4 +1,4 @@
-# Added third-party notices — Smart Capture V2
+# Added third-party notices — Smart Capture
 
 This file does not license Smart Capture itself. The owner's existing LICENSE.md remains unchanged.
 
@@ -11,3 +11,9 @@ This file does not license Smart Capture itself. The owner's existing LICENSE.md
 ## Development accessibility tests
 
 @axe-core/playwright 4.14.0 and its axe-core dependency are development-only automated accessibility tools (MPL-2.0), not part of the shipped runtime. Upstream: https://github.com/dequelabs/axe-core-npm/tree/develop/packages/playwright .
+
+## Native Android V3
+
+- EfficientDet-Lite0 TensorFlow model: Apache-2.0; source, SHA-256 and model card in `shared/models/NOTICE.json`, full license in `shared/models/LICENSE.efficientdet.txt`. LiteRT runtime retains its upstream notices and is pinned in the Android Gradle build.
+- AndroidX/Compose/CameraX/Room/ExifInterface, Kotlin, Coil and ML Kit retain their respective upstream terms; dependency coordinates are pinned in `android/app/build.gradle.kts`. ML Kit's bundled barcode library is used for VIN labels, without a model download during capture.
+- Five additional original image_gen photographic atlases cover scene-specific interiors and mechanical/detail views. Tool mode, full prompts, source paths, usage/provenance and hashes are recorded in `shared/references/generation-prompts.json` and `shared/catalog.v3.json`. The eight V2 original atlases retain their original provenance. These are generic composition examples, not actual inventory or exact manufacturer geometry. No stock photos were scraped or hotlinked.

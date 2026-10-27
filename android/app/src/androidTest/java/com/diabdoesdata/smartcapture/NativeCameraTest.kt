@@ -121,11 +121,10 @@ class NativeCameraTest {
             before.map { android.content.ContentUris.parseId(android.net.Uri.parse(it)) }.toSet()
         val records = runBlocking {
             db.dao().photos().first().filter {
-                it.uri != null &&
-                    android.content.ContentUris.parseId(android.net.Uri.parse(it.uri)) !in
-                        beforeIds &&
-                    it.source == "camera" &&
-                    it.state == "saved"
+                it.source == "camera" &&
+                    it.state == "saved" &&
+                    it.uri != null &&
+                    android.content.ContentUris.parseId(android.net.Uri.parse(it.uri)) !in beforeIds
             }
         }
         val details = org.json.JSONArray()

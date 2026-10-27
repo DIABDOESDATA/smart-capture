@@ -5,6 +5,20 @@ import org.junit.Test
 
 class CaptureRulesTest {
     @Test
+    fun delayedVinLookupCannotOverwriteAnotherVehicleOrConcurrentManualEdits() {
+        val request = Vehicle(vin = "1HGCM82633A004352")
+        val decoded = request.copy(year = "2003", make = "Honda", model = "Accord", stock = "old")
+        val other = request.copy(vin = "1M8GDM9AXKP042788", model = "Manually entered")
+        assertEquals(other, CaptureRules.mergeDecoded(request, decoded, other))
+        val current = request.copy(year = "2004", stock = "SC-1042", body = "coupe")
+        val merged = CaptureRules.mergeDecoded(request, decoded, current)
+        assertEquals("2004", merged.year)
+        assertEquals("Honda", merged.make)
+        assertEquals("SC-1042", merged.stock)
+        assertEquals("coupe", merged.body)
+    }
+
+    @Test
     fun vinIsOptionalButInvalidCharactersAreNeverAcceptedAsKnownVin() {
         assertEquals("1HGCM82633A004352", CaptureRules.normalizeVin("1hg cm82633a004352 "))
         assertTrue(CaptureRules.validVin("1HGCM82633A004352"))

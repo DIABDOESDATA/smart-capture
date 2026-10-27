@@ -48,6 +48,16 @@ data class Vehicle(
 }
 
 object CaptureRules {
+    fun mergeDecoded(request: Vehicle, decoded: Vehicle, current: Vehicle): Vehicle {
+        if (current.vin != request.vin) return current
+        return current.copy(
+            year = if (current.year == request.year) decoded.year else current.year,
+            make = if (current.make == request.make) decoded.make else current.make,
+            model = if (current.model == request.model) decoded.model else current.model,
+            trim = if (current.trim == request.trim) decoded.trim else current.trim,
+        )
+    }
+
     fun normalizeVin(vin: String) = vin.uppercase(Locale.ROOT).replace(" ", "").trim()
 
     fun validVin(vin: String) = vin.matches(Regex("[A-HJ-NPR-Z0-9]{17}"))
