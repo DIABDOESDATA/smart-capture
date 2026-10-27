@@ -75,7 +75,7 @@ try {
       await page.getByRole('heading', { name: 'Dealership Photography Templates' }).waitFor();
       await page.getByRole('button', { name: 'Smart Capture home' }).click();
       await page.getByRole('button', { name: 'New Photo Session' }).click();
-      await page.getByPlaceholder('e.g. DD-8472').fill('OFFLINE-CHECK');
+      await page.getByPlaceholder('e.g. SC-1042').fill('OFFLINE-CHECK');
       await page.getByRole('button', { name: 'Start Guided Capture Session' }).click();
       await page.getByRole('button', { name: 'Use sample-photo mode' }).click();
       await page.getByLabel('Capture sample photo').click();
