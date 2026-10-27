@@ -310,6 +310,17 @@ class NativeCameraTest {
 
     @Test
     fun fullReferenceCatalogDecodesAndDetectorRunsOffline() {
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        automation.adoptShellPermissionIdentity(Manifest.permission.ACCESS_NETWORK_STATE)
+        try {
+            val connectivity = context.getSystemService(android.net.ConnectivityManager::class.java)
+            assertNull(
+                "Offline instrumentation must have no active network",
+                connectivity.activeNetwork,
+            )
+        } finally {
+            automation.dropShellPermissionIdentity()
+        }
         val catalog = Catalog(context)
         assertEquals(34, catalog.shots.size)
         for (body in listOf("sedan", "suv", "truck")) for (shot in catalog.shots) {
@@ -372,5 +383,59 @@ class NativeCameraTest {
                             .toString(2)
                     )
             }
+    }
+
+    @Test
+    fun unfoldedSizeAndBackgroundRetainTheSelectedGuide() {
+        lateinit var vm: CameraViewModel
+        ui.runOnIdle {
+            vm = androidx.lifecycle.ViewModelProvider(ui.activity)[CameraViewModel::class.java]
+        }
+        ui.waitUntil(10_000) { !vm.loading && !vm.busy }
+        ui.runOnIdle {
+            vm.start(Vehicle(model = "Demo SUV", body = "suv"), demo = true, extended = true)
+        }
+        ui.waitUntil(10_000) { vm.active?.demo == true && vm.body == "suv" && !vm.busy }
+        ui.runOnIdle { vm.navigate(12) }
+        ui.waitUntil(10_000) { vm.active?.cursor == 12 }
+        val id = vm.active!!.id
+        try {
+            ui.runOnUiThread {
+                ui.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            }
+            device.executeShellCommand("wm size 1840x2208")
+            ui.waitUntil(10_000) {
+                ui.activity.resources.configuration.screenHeightDp > 500 &&
+                    vm.shot?.code == "DRIVER_COCKPIT"
+            }
+            ui.waitUntil(5_000) {
+                ui.onAllNodesWithContentDescription("Demo scene: Driver Cockpit & Door Open")
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            }
+            evidence("fold-size-landscape-demo")
+            device.pressHome()
+            val intent =
+                context.packageManager
+                    .getLaunchIntentForPackage(context.packageName)!!
+                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            ui.runOnUiThread { context.startActivity(intent) }
+            ui.waitUntil(10_000) {
+                ui.onAllNodesWithText("DEMO · SUV").fetchSemanticsNodes().isNotEmpty()
+            }
+            assertEquals(id, vm.active!!.id)
+            assertEquals(12, vm.active!!.cursor)
+            File(context.getExternalFilesDir(null), "test-evidence/window-state.json")
+                .writeText(
+                    JSONObject()
+                        .put("emulatedDisplayPixels", "1840x2208")
+                        .put("landscapeAndBackgroundRetainSessionAndShot", true)
+                        .put("physicalFoldHingeTest", false)
+                        .toString(2)
+                )
+        } finally {
+            device.executeShellCommand("wm size reset")
+        }
+        ui.runOnIdle { vm.quick() }
     }
 }

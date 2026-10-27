@@ -28,10 +28,9 @@ jobs:
           SC_PREVIEW_KEYSTORE: ${{ secrets.SC_PREVIEW_KEYSTORE }}
         run: |
           mkdir -p ~/.android
-          if [ -n "$SC_PREVIEW_KEYSTORE" ]; then
-            printf '%s' "$SC_PREVIEW_KEYSTORE" | base64 --decode > ~/.android/debug.keystore
-            chmod 600 ~/.android/debug.keystore
-          fi
+          test -n "$SC_PREVIEW_KEYSTORE" || { echo 'Missing stable owner preview signing secret'; exit 1; }
+          printf '%s' "$SC_PREVIEW_KEYSTORE" | base64 --decode > ~/.android/debug.keystore
+          chmod 600 ~/.android/debug.keystore
       - name: Check complete photographic catalog
         run: python3 scripts/validate_native_catalog.py
       - name: Compile, test and lint native application

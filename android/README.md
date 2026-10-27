@@ -36,7 +36,7 @@ emulator -avd smartcapture_api35 -camera-back emulated -camera-front none
 python scripts/test_native_emulator.py --apk android/app/build/outputs/apk/debug/app-debug.apk --test-apk android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 ```
 
-The harness keeps the test app installed and retrieves screenshots/JSON before emulator teardown. It verifies runner success instead of relying on `adb`'s exit status. Automated fixtures use explicit synthetic vehicle metadata and emulator imagery. Demo images never enter MediaStore. Instrumentation sources compile and execute; AGP 8.13's K2 test-source lint analyzer crashes on the ViewModel fixture, so only test-source lint analysis is excluded. Production lint still fails the build on errors. Dependency-update/style notices are retained in lint reports.
+The harness refuses physical phones, enables airplane mode with Wi-Fi off during testing, then restores connectivity. It keeps the test app installed and retrieves screenshots/JSON before emulator teardown. It verifies runner success instead of relying on `adb`'s exit status. Automated fixtures use explicit synthetic vehicle metadata and emulator imagery. Demo images never enter MediaStore. Instrumentation sources compile and execute; AGP 8.13's K2 test-source lint analyzer crashes on the ViewModel fixture, so only test-source lint analysis is excluded. Production lint still fails the build on errors. Dependency-update/style notices are retained in lint reports.
 
 ## Architecture and limits
 

@@ -4,8 +4,9 @@ This is an owner-testing native Android preview, not a zero-defect/public-releas
 
 ## Automated evidence
 
-* Gradle assembles native application and instrumentation APKs. JVM tests exercise VIN/filename/GPS eligibility and guidance confidence, smoothing, context, staleness and calibrated target behavior.
+* Gradle assembles native application and instrumentation APKs. Ten JVM tests exercise VIN/filename/GPS eligibility, stale VIN lookup/edit protection, interrupted-JPEG markers and guidance confidence, smoothing, context, staleness and calibrated target behavior.
 * Android API 35 x86_64 emulator instrumentation drives actual Compose controls and CameraX ImageCapture. The sustained test captures 20 native JPEGs through MediaStore in portrait/landscape, reads EXIF and records native dimensions, bytes, URIs and save timing. Emulator timing is not physical phone performance.
+* Five Android tests run with airplane mode enabled and Wi-Fi disabled; the detector test verifies no active network. An additional UI test resizes the emulator to 1840×2208 pixels, rotates it and backgrounds/resumes the app while retaining the selected session/guide. This is a simulated display-size change, not a physical fold/hinge test.
 * A separate fixture enters known synthetic vehicle information, reads VIN/stock and dimensions back from the saved EXIF, recreates interruption after publication/before association, verifies idempotent recovery, and retakes while retaining both gallery originals. No fake coordinates are embedded.
 * Dedicated demo sedan/SUV/pickup sequences finish using private app storage: 30 / 31 / 30 shots, with no MediaStore publication. Screenshots cover exterior, cockpit, cluster, rear seats, wheel, trunk, engine and VIN-label guides. They are labeled examples, not live vehicle detection evidence.
 * All 34 shot codes decode; CI verifies 272 crops, source dimensions, PNG hashes, provenance and the bundled model hash. The actual LiteRT interpreter detects a vehicle in a photographic fixture and returns unknown on a blank image. Synthetic fixtures do not establish field accuracy.

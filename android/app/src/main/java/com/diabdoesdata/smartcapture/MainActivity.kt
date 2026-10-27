@@ -639,7 +639,7 @@ private fun CameraFrame(
                                 }
                             }
                         }
-                    if (!vm.completed)
+                    if (!vm.completed && vm.message == null)
                         Surface(
                             color = Ink.copy(alpha = 0.78f),
                             shape = RoundedCornerShape(14.dp),

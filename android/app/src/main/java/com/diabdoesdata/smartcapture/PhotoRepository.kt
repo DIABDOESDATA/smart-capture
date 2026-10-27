@@ -66,6 +66,7 @@ class PhotoRepository(private val context: Context, private val db: CaptureDatab
                 require(file.exists() && file.length() > 0) {
                     "Capture was interrupted before a complete photo was available. Retake this shot."
                 }
+                requireJpegEndMarker(file)
                 val (w, h) = writeMetadata(file, job.metadata, job.capturedAt)
                 // Reconcile a crash between insertion and journaling, using our unique name.
                 var uri = job.uri?.let(Uri::parse) ?: findOwnImage(job.displayName)
