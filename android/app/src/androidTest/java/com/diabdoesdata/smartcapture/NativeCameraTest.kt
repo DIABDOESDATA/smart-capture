@@ -12,6 +12,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.UiDevice
 import java.io.File
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.*
@@ -23,6 +24,16 @@ class NativeCameraTest {
     @get:Rule(order = 0)
     val permission: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.CAMERA)
     @get:Rule(order = 1) val ui = createAndroidComposeRule<MainActivity>()
+    @get:Rule(order = 2) val testName = org.junit.rules.TestName()
+
+    @After
+    fun saveDiagnostics() {
+        val dir = File(context.getExternalFilesDir(null), "test-evidence").apply { mkdirs() }
+        dir.resolve("${testName.methodName}-semantics.txt")
+            .writeText(ui.onAllNodes(isRoot(), useUnmergedTree = true).onLast().printToString())
+        evidence("${testName.methodName}-final")
+    }
+
     private val context
         get() = ui.activity.applicationContext
 
@@ -97,23 +108,127 @@ class NativeCameraTest {
         evidence("native-landscape")
         click("Take photo")
         ui.waitUntil(20_000) { shotsInGallery().size == before.size + 2 }
+        waitShutter()
+        // A sustained run uses the real emulator camera and native publication path.
+        repeat(18) { index ->
+            click("Take photo")
+            ui.waitUntil(20_000) { shotsInGallery().size == before.size + 3 + index }
+            waitShutter()
+        }
         val db = CaptureDatabase.get(context)
         runBlocking { assertTrue(db.dao().unfinished().none { it.error == null }) }
+        val records = runBlocking {
+            db.dao().photos().first().filter {
+                it.uri !in before && it.source == "camera" && it.state == "saved"
+            }
+        }
+        val details = org.json.JSONArray()
+        records.forEach { p ->
+            details.put(
+                JSONObject()
+                    .put("uri", p.uri)
+                    .put("width", p.width)
+                    .put("height", p.height)
+                    .put("bytes", p.bytes)
+                    .put("saveMs", p.elapsedMs)
+                    .put("metadata", JSONObject(p.metadata))
+            )
+        }
         val report = File(context.getExternalFilesDir(null), "test-evidence/native-capture.json")
         report.writeText(
             JSONObject()
                 .put("device", "Android API 35 emulator; NOT physical hardware")
                 .put("galleryUris", org.json.JSONArray(shotsInGallery()))
                 .put("portraitAndLandscape", true)
+                .put("newNativeCaptures", 20)
+                .put("captureDetails", details)
                 .toString(2)
         )
+    }
+
+    @Test
+    fun knownMetadataRetakeAndPublicationRecovery() {
+        lateinit var vm: CameraViewModel
+        ui.runOnIdle {
+            vm = androidx.lifecycle.ViewModelProvider(ui.activity)[CameraViewModel::class.java]
+        }
+        ui.waitUntil(10_000) { !vm.loading && !vm.busy }
+        ui.runOnIdle {
+            vm.start(
+                Vehicle(
+                    vin = "1HGCM82633A004352",
+                    year = "2003",
+                    make = "Honda",
+                    model = "Accord",
+                    stock = "V3-TEST",
+                )
+            )
+        }
+        ui.waitUntil(10_000) {
+            vm.active?.demo == false && vm.active?.vehicle?.contains("V3-TEST") == true && !vm.busy
+        }
+        waitShutter()
+        val session = vm.active!!
+        val before = shotsInGallery().size
+        click("Take photo")
+        ui.waitUntil(20_000) { shotsInGallery().size == before + 1 }
+        waitShutter()
+        val db = CaptureDatabase.get(context)
+        val first = runBlocking {
+            db.dao().photos().first().first { it.sessionId == session.id && it.state == "saved" }
+        }
+        context.contentResolver.openInputStream(android.net.Uri.parse(first.uri))!!.use { stream ->
+            val e = ExifInterface(stream)
+            val j = JSONObject(e.getAttribute(ExifInterface.TAG_USER_COMMENT)!!)
+            assertEquals("1HGCM82633A004352", j.getJSONObject("vehicle").getString("vin"))
+            assertTrue(
+                e.getAttribute(ExifInterface.TAG_IMAGE_DESCRIPTION)!!.contains("Stock: V3-TEST")
+            )
+            assertEquals(first.width, j.getInt("nativeWidth"))
+            assertFalse(j.has("location"))
+        }
+        // Recreate a crash after gallery publication, before Room association, using this test's
+        // JPEG.
+        runBlocking {
+            val temp = File(first.tempPath)
+            context.contentResolver.openInputStream(android.net.Uri.parse(first.uri))!!.use { input
+                ->
+                temp.outputStream().use { input.copyTo(it) }
+            }
+            db.dao().putSession(db.dao().session(session.id)!!.copy(cursor = 0))
+            db.dao().putPhoto(first.copy(state = "publishing"))
+            vm.repository.recover()
+            assertEquals("saved", db.dao().photo(first.id)!!.state)
+            assertEquals(1, db.dao().session(session.id)!!.cursor)
+        }
+        assertEquals(before + 1, shotsInGallery().size)
+        ui.runOnIdle { vm.navigate(0) }
+        ui.waitUntil(10_000) { vm.active?.cursor == 0 }
+        waitShutter()
+        click("Take photo")
+        ui.waitUntil(20_000) { shotsInGallery().size == before + 2 }
+        waitShutter()
+        assertTrue(shotsInGallery().contains(first.uri))
+        File(context.getExternalFilesDir(null), "test-evidence/metadata-recovery.json")
+            .writeText(
+                JSONObject()
+                    .put(
+                        "input",
+                        "Explicit synthetic vehicle metadata fixture entered by test; emulator scene is not a real vehicle",
+                    )
+                    .put("vinAndStockRoundTrip", true)
+                    .put("publicationRecoveryNoDuplicate", true)
+                    .put("retakeKeepsBothGalleryOriginals", true)
+                    .toString(2)
+            )
+        ui.runOnIdle { vm.quick() }
     }
 
     @Test
     fun guidedDemoAdvancesWithPhotographicInteriorAndNoMediaStoreWrites() {
         click("Camera modes")
         ui.onNodeWithText("TRY A DEMO").performScrollTo()
-        ui.onAllNodesWithText("Sedan").onLast().performClick()
+        ui.onNodeWithTag("demo-sedan").performScrollTo().performClick()
         ui.waitUntil(10_000) {
             ui.onAllNodesWithText("DEMO · SEDAN").fetchSemanticsNodes().isNotEmpty()
         }
@@ -125,8 +240,14 @@ class NativeCameraTest {
             ui.onAllNodesWithText("2 /", substring = true).fetchSemanticsNodes().isNotEmpty()
         }
         click("Shot list")
-        ui.onNodeWithText("13. Driver Cockpit & Door Open").performScrollTo().performClick()
+        ui.onNodeWithTag("shot-list").performScrollToIndex(12)
+        ui.onNodeWithText("13. Driver Cockpit & Door Open").performClick()
         waitShutter()
+        ui.waitUntil(5_000) {
+            ui.onAllNodesWithContentDescription("Demo scene: Driver Cockpit & Door Open")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         evidence("demo-cockpit-portrait")
         ui.runOnUiThread {
             ui.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -144,11 +265,34 @@ class NativeCameraTest {
         assertEquals(before, shotsInGallery().size)
         click("Shot list")
         val catalog = Catalog(context)
-        val trunk = catalog.sequence("sedan", true).indexOf("TRUNK_CARGO")
-        ui.onNodeWithText("${trunk+1}. ${catalog.shot("TRUNK_CARGO").name}")
-            .performScrollTo()
-            .performClick()
+        val trunk = catalog.sequence("sedan", true, sunroof = true).indexOf("TRUNK_CARGO")
+        ui.onNodeWithTag("shot-list").performScrollToIndex(trunk)
+        ui.onNodeWithText("${trunk+1}. ${catalog.shot("TRUNK_CARGO").name}").performClick()
+        ui.waitUntil(5_000) {
+            ui.onAllNodesWithContentDescription("Demo scene: ${catalog.shot("TRUNK_CARGO").name}")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         evidence("demo-trunk-landscape")
+        for ((code, label) in
+            listOf(
+                "ENGINE_BAY" to "engine",
+                "WHEEL_FRONT_DRIVER" to "wheel",
+                "REAR_SEATS" to "rear-seats",
+                "INSTRUMENT_CLUSTER" to "cluster",
+                "VIN_DOOR_JAMB" to "vin-label",
+            )) {
+            click("Shot list")
+            val index = catalog.sequence("sedan", true, sunroof = true).indexOf(code)
+            ui.onNodeWithTag("shot-list").performScrollToIndex(index)
+            ui.onNodeWithText("${index+1}. ${catalog.shot(code).name}").performClick()
+            ui.waitUntil(5_000) {
+                ui.onAllNodesWithContentDescription("Demo scene: ${catalog.shot(code).name}")
+                    .fetchSemanticsNodes()
+                    .isNotEmpty()
+            }
+            evidence("demo-$label-landscape")
+        }
     }
 
     @Test
@@ -159,6 +303,38 @@ class NativeCameraTest {
             val image = catalog.bitmap(shot, body)
             assertTrue(image.width >= 150 && image.height >= 150)
         }
+        val before = shotsInGallery().size
+        val counts = JSONObject()
+        runBlocking {
+            val db = CaptureDatabase.get(context)
+            val repository = PhotoRepository(context, db)
+            for (body in listOf("sedan", "suv", "truck")) {
+                val codes = catalog.sequence(body, true, thirdRow = true, sunroof = true)
+                var session =
+                    Session(
+                        java.util.UUID.randomUUID().toString(),
+                        body,
+                        Vehicle(model = "Demo", body = body).json().toString(),
+                        org.json.JSONArray(codes).toString(),
+                        demo = true,
+                    )
+                db.dao().putSession(session)
+                for (code in codes) {
+                    repository.saveDemo(session, catalog.shot(code), catalog)
+                    session = db.dao().session(session.id)!!
+                }
+                assertEquals(codes.size, session.cursor)
+                counts.put(body, codes.size)
+            }
+        }
+        assertEquals(before, shotsInGallery().size)
+        File(context.getExternalFilesDir(null), "test-evidence/demo-sequences.json")
+            .writeText(
+                JSONObject()
+                    .put("privateDemoCaptures", counts)
+                    .put("mediaStoreWrites", 0)
+                    .toString(2)
+            )
         VehicleDetector(context) {}
             .use { detector ->
                 val start = android.os.SystemClock.elapsedRealtime()

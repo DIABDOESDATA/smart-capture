@@ -24,6 +24,7 @@ call('wait-for-device')
 for setting in ['window_animation_scale','transition_animation_scale','animator_duration_scale']:
     call('shell','settings','put','global',setting,'0')
 call('shell','input','keyevent','82')
+call('shell','settings','put','secure','immersive_mode_confirmations','confirmed')
 call('install','-r',str(next(Path().glob(args.apk))))
 call('install','-r',str(next(Path().glob(args.test_apk))))
 call('shell','pm','grant','com.diabdoesdata.smartcapture.preview','android.permission.CAMERA')

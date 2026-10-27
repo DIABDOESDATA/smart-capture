@@ -37,6 +37,9 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     private var extensions: ExtensionsManager? = null
     private var selector = CameraSelector.DEFAULT_BACK_CAMERA
     private var analysisEnabled = false
+    private var cameraOpen = false
+    private var previewStreaming = false
+    private var configuredWide: Boolean? = null
     private var vinCallback: ((String) -> Unit)? = null
     private val scanning = java.util.concurrent.atomic.AtomicBoolean(false)
     private val barcodeScanner =
@@ -153,6 +156,10 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         preview.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         preview.scaleType = PreviewView.ScaleType.FIT_CENTER
         preview.controller = controller
+        preview.previewStreamState.observe(owner) { state ->
+            previewStreaming = state == PreviewView.StreamState.STREAMING
+            ready = cameraOpen && previewStreaming
+        }
         bind()
     }
 
@@ -184,7 +191,8 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         }
         info.cameraState.removeObservers(owner)
         info.cameraState.observe(owner) { s ->
-            ready = s.type == CameraState.Type.OPEN && s.error == null
+            cameraOpen = s.type == CameraState.Type.OPEN && s.error == null
+            ready = cameraOpen && previewStreaming
             error =
                 s.error?.let {
                     "Camera unavailable (${it.code}). Close other camera apps and retry."
@@ -193,6 +201,8 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     }
 
     fun ratio(wide: Boolean) {
+        if (configuredWide == wide) return
+        configuredWide = wide
         controller.imageCaptureResolutionSelector =
             ResolutionSelector.Builder()
                 .setAspectRatioStrategy(

@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -254,7 +255,7 @@ fun SessionSheet(
                         )
                         onClose()
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).testTag("demo-$body"),
                     contentPadding = PaddingValues(8.dp),
                 ) {
                     Text(label)
@@ -415,7 +416,7 @@ fun SettingsSheet(
 fun ShotSheet(vm: CameraViewModel, onClose: () -> Unit) {
     Column(Modifier.fillMaxWidth().heightIn(max = 650.dp)) {
         SheetTitle("Shot list", "Choose a view to retake. Both gallery originals are kept.")
-        LazyColumn {
+        LazyColumn(Modifier.testTag("shot-list")) {
             items(vm.sequence.withIndex().toList(), key = { it.index }) { entry ->
                 val shot = vm.catalog.shot(entry.value)
                 val bitmap by

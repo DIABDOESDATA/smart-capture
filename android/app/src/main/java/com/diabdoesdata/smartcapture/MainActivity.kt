@@ -128,6 +128,15 @@ fun CameraApp(vm: CameraViewModel) {
         if (granted && vm.active?.demo != true)
             remember(context, owner) { NativeCamera(context, owner) }
         else null
+    LaunchedEffect(sheet, selectedPhoto, granted) {
+        if (sheet == "none" && selectedPhoto == null) {
+            delay(250)
+            (context as? android.app.Activity)?.window?.let { window ->
+                WindowInsetsControllerCompat(window, window.decorView)
+                    .hide(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
     DisposableEffect(camera) { onDispose { camera?.close() } }
     DisposableEffect(owner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -254,56 +263,36 @@ fun CameraApp(vm: CameraViewModel) {
     }
     Surface(Modifier.fillMaxSize(), color = Ink) {
         Box(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-            if (landscape)
-                Row(Modifier.fillMaxSize()) {
-                    CameraFrame(
-                        vm,
-                        camera,
-                        Modifier.weight(1f).fillMaxHeight(),
-                        landscape,
-                        instruction,
-                        roll.takeIf { clock - rollAt in 0..1500 },
-                        { sheet = "sessions" },
-                        { sheet = "settings" },
-                        granted,
-                        { permission.launch(Manifest.permission.CAMERA) },
-                    )
-                    Controls(
-                        vm,
-                        camera,
-                        recent,
-                        true,
-                        shutter,
-                        { photo -> openPhoto(context, photo) { selectedPhoto = photo } },
-                        { sheet = "shots" },
-                        { sheet = "sessions" },
-                    )
-                }
-            else
-                Column(Modifier.fillMaxSize()) {
-                    CameraFrame(
-                        vm,
-                        camera,
-                        Modifier.weight(1f).fillMaxWidth(),
-                        landscape,
-                        instruction,
-                        roll.takeIf { clock - rollAt in 0..1500 },
-                        { sheet = "sessions" },
-                        { sheet = "settings" },
-                        granted,
-                        { permission.launch(Manifest.permission.CAMERA) },
-                    )
-                    Controls(
-                        vm,
-                        camera,
-                        recent,
-                        false,
-                        shutter,
-                        { photo -> openPhoto(context, photo) { selectedPhoto = photo } },
-                        { sheet = "shots" },
-                        { sheet = "sessions" },
-                    )
-                }
+            // Keep the same Android PreviewView node through orientation changes.
+            // Replacing a Row with a Column can detach the old surface after the new one binds.
+            CameraFrame(
+                vm,
+                camera,
+                Modifier.fillMaxSize()
+                    .padding(
+                        end = if (landscape) 104.dp else 0.dp,
+                        bottom = if (landscape) 0.dp else 156.dp,
+                    ),
+                landscape,
+                instruction,
+                roll.takeIf { clock - rollAt in 0..1500 },
+                { sheet = "sessions" },
+                { sheet = "settings" },
+                granted,
+                { permission.launch(Manifest.permission.CAMERA) },
+            )
+            Box(Modifier.align(if (landscape) Alignment.CenterEnd else Alignment.BottomCenter)) {
+                Controls(
+                    vm,
+                    camera,
+                    recent,
+                    landscape,
+                    shutter,
+                    { photo -> openPhoto(context, photo) { selectedPhoto = photo } },
+                    { sheet = "shots" },
+                    { sheet = "sessions" },
+                )
+            }
             vm.message?.let { message ->
                 LaunchedEffect(message) {
                     delay(4500)

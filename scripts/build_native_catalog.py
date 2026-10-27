@@ -61,7 +61,7 @@ for s in shots:
         elif code=='CONVERTIBLE_ROOF_UP': ref=cell('extras.png',0,2,2)
         elif code=='ADDITIONAL_FREE': ref=cell('extras.png',3,2,2)
         else: ref=cell('details.png',details[code])
-        ref.update(status='complete', preview=dict(path=assets[ref['asset']]['path'],rect=ref['rect']),anchors=[[.1,.1],[.9,.9]],cropMode='fit',mask='source-alpha' if code in exterior else 'rectangle',calibration=dict(opacity=.32,scale=1,offsetX=0,offsetY=0))
+        ref.update(type='photographic-cutout' if code in exterior else 'photographic-scene-example',status='complete', preview=dict(path=assets[ref['asset']]['path'],rect=ref['rect']),anchors=[[.1,.1],[.9,.9]],cropMode='fit',mask='source-alpha' if code in exterior else 'rectangle',calibration=dict(opacity=.32,scale=1,offsetX=0,offsetY=0))
         refs[body]=ref
     s['references']=refs
     s['detectorEligible']=code in exterior

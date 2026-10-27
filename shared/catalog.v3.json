@@ -137,6 +137,7 @@
             270
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/sedan.png",
@@ -175,6 +176,7 @@
             285
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/suv.png",
@@ -213,6 +215,7 @@
             285
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/truck.png",
@@ -251,6 +254,7 @@
             230
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/coupe.png",
@@ -289,6 +293,7 @@
             275
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/wagon.png",
@@ -327,6 +332,7 @@
             250
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/convertible.png",
@@ -365,6 +371,7 @@
             285
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/van.png",
@@ -403,6 +410,7 @@
             255
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/classic.png",
@@ -462,6 +470,7 @@
             270
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/sedan.png",
@@ -500,6 +509,7 @@
             285
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/suv.png",
@@ -538,6 +548,7 @@
             290
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/truck.png",
@@ -576,6 +587,7 @@
             230
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/coupe.png",
@@ -614,6 +626,7 @@
             275
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/wagon.png",
@@ -652,6 +665,7 @@
             250
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/convertible.png",
@@ -690,6 +704,7 @@
             285
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/van.png",
@@ -728,6 +743,7 @@
             255
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/classic.png",
@@ -787,6 +803,7 @@
             270
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/sedan.png",
@@ -825,6 +842,7 @@
             285
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/suv.png",
@@ -863,6 +881,7 @@
             285
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/truck.png",
@@ -901,6 +920,7 @@
             230
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/coupe.png",
@@ -939,6 +959,7 @@
             275
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/wagon.png",
@@ -977,6 +998,7 @@
             250
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/convertible.png",
@@ -1015,6 +1037,7 @@
             285
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/van.png",
@@ -1053,6 +1076,7 @@
             255
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/classic.png",
@@ -1112,6 +1136,7 @@
             200
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/sedan.png",
@@ -1150,6 +1175,7 @@
             220
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/suv.png",
@@ -1188,6 +1214,7 @@
             215
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/truck.png",
@@ -1226,6 +1253,7 @@
             175
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/coupe.png",
@@ -1264,6 +1292,7 @@
             190
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/wagon.png",
@@ -1302,6 +1331,7 @@
             190
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/convertible.png",
@@ -1340,6 +1370,7 @@
             210
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/van.png",
@@ -1378,6 +1409,7 @@
             185
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/classic.png",
@@ -1437,6 +1469,7 @@
             280
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/sedan.png",
@@ -1475,6 +1508,7 @@
             300
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/suv.png",
@@ -1513,6 +1547,7 @@
             290
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/truck.png",
@@ -1551,6 +1586,7 @@
             240
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/coupe.png",
@@ -1589,6 +1625,7 @@
             300
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/wagon.png",
@@ -1627,6 +1664,7 @@
             265
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/convertible.png",
@@ -1665,6 +1703,7 @@
             300
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/van.png",
@@ -1703,6 +1742,7 @@
             270
           ],
           "mirror": true,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/classic.png",
@@ -1762,6 +1802,7 @@
             280
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/sedan.png",
@@ -1800,6 +1841,7 @@
             300
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/suv.png",
@@ -1838,6 +1880,7 @@
             300
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/truck.png",
@@ -1876,6 +1919,7 @@
             240
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/coupe.png",
@@ -1914,6 +1958,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/wagon.png",
@@ -1952,6 +1997,7 @@
             265
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/convertible.png",
@@ -1990,6 +2036,7 @@
             315
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/van.png",
@@ -2028,6 +2075,7 @@
             270
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/classic.png",
@@ -2087,6 +2135,7 @@
             280
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/sedan.png",
@@ -2125,6 +2174,7 @@
             300
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/suv.png",
@@ -2163,6 +2213,7 @@
             290
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/truck.png",
@@ -2201,6 +2252,7 @@
             240
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/coupe.png",
@@ -2239,6 +2291,7 @@
             300
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/wagon.png",
@@ -2277,6 +2330,7 @@
             265
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/convertible.png",
@@ -2315,6 +2369,7 @@
             300
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/van.png",
@@ -2353,6 +2408,7 @@
             270
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/classic.png",
@@ -2412,6 +2468,7 @@
             200
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/sedan.png",
@@ -2450,6 +2507,7 @@
             220
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/suv.png",
@@ -2488,6 +2546,7 @@
             215
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/truck.png",
@@ -2526,6 +2585,7 @@
             175
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/coupe.png",
@@ -2564,6 +2624,7 @@
             190
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/wagon.png",
@@ -2602,6 +2663,7 @@
             190
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/convertible.png",
@@ -2640,6 +2702,7 @@
             210
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/van.png",
@@ -2678,6 +2741,7 @@
             185
           ],
           "mirror": false,
+          "type": "photographic-cutout",
           "status": "complete",
           "preview": {
             "path": "references/classic.png",
@@ -2737,6 +2801,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -2775,6 +2840,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -2813,6 +2879,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -2851,6 +2918,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -2889,6 +2957,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -2927,6 +2996,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -2965,6 +3035,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3003,6 +3074,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3062,6 +3134,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3100,6 +3173,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3138,6 +3212,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3176,6 +3251,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3214,6 +3290,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3252,6 +3329,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3290,6 +3368,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3328,6 +3407,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3387,6 +3467,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3425,6 +3506,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3463,6 +3545,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3501,6 +3584,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3539,6 +3623,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3577,6 +3662,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3615,6 +3701,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3653,6 +3740,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3712,6 +3800,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3750,6 +3839,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3788,6 +3878,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3826,6 +3917,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3864,6 +3956,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3902,6 +3995,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3940,6 +4034,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -3978,6 +4073,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -4037,6 +4133,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4075,6 +4172,7 @@
             262
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -4113,6 +4211,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -4151,6 +4250,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4189,6 +4289,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4227,6 +4328,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4265,6 +4367,7 @@
             262
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -4303,6 +4406,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4362,6 +4466,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4400,6 +4505,7 @@
             262
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -4438,6 +4544,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -4476,6 +4583,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4514,6 +4622,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4552,6 +4661,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4590,6 +4700,7 @@
             262
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -4628,6 +4739,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4687,6 +4799,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4725,6 +4838,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -4763,6 +4877,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -4801,6 +4916,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4839,6 +4955,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4877,6 +4994,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -4915,6 +5033,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -4953,6 +5072,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5012,6 +5132,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -5050,6 +5171,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -5088,6 +5210,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -5126,6 +5249,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -5164,6 +5288,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -5202,6 +5327,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -5240,6 +5366,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -5278,6 +5405,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -5337,6 +5465,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5375,6 +5504,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -5413,6 +5543,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -5451,6 +5582,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5489,6 +5621,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5527,6 +5660,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5565,6 +5699,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -5603,6 +5738,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5662,6 +5798,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5700,6 +5837,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5738,6 +5876,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -5776,6 +5915,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5814,6 +5954,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5852,6 +5993,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5890,6 +6032,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5928,6 +6071,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -5987,6 +6131,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6025,6 +6170,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6063,6 +6209,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6101,6 +6248,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6139,6 +6287,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6177,6 +6326,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6215,6 +6365,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6253,6 +6404,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6312,6 +6464,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6350,6 +6503,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6388,6 +6542,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6426,6 +6581,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6464,6 +6620,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6502,6 +6659,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6540,6 +6698,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6578,6 +6737,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6637,6 +6797,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6675,6 +6836,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6713,6 +6875,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6751,6 +6914,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6789,6 +6953,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6827,6 +6992,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6865,6 +7031,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6903,6 +7070,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -6962,6 +7130,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7000,6 +7169,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7038,6 +7208,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7076,6 +7247,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7114,6 +7286,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7152,6 +7325,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7190,6 +7364,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7228,6 +7403,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7287,6 +7463,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7325,6 +7502,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7363,6 +7541,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7401,6 +7580,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7439,6 +7619,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7477,6 +7658,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7515,6 +7697,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7553,6 +7736,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -7612,6 +7796,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -7650,6 +7835,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -7688,6 +7874,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -7726,6 +7913,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -7764,6 +7952,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -7802,6 +7991,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -7840,6 +8030,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -7878,6 +8069,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -7937,6 +8129,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -7975,6 +8168,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -8013,6 +8207,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -8051,6 +8246,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -8089,6 +8285,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -8127,6 +8324,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -8165,6 +8363,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -8203,6 +8402,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -8256,6 +8456,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8294,6 +8495,7 @@
             262
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -8332,6 +8534,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -8370,6 +8573,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8408,6 +8612,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8446,6 +8651,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8484,6 +8690,7 @@
             262
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -8522,6 +8729,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8581,6 +8789,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8619,6 +8828,7 @@
             262
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -8657,6 +8867,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -8695,6 +8906,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8733,6 +8945,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8771,6 +8984,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8809,6 +9023,7 @@
             262
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -8847,6 +9062,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8906,6 +9122,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -8944,6 +9161,7 @@
             262
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -8982,6 +9200,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -9020,6 +9239,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -9058,6 +9278,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -9096,6 +9317,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -9134,6 +9356,7 @@
             262
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -9172,6 +9395,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -9231,6 +9455,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -9269,6 +9494,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -9307,6 +9533,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -9345,6 +9572,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -9383,6 +9611,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -9421,6 +9650,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -9459,6 +9689,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -9497,6 +9728,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -9556,6 +9788,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -9594,6 +9827,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -9632,6 +9866,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -9670,6 +9905,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -9708,6 +9944,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -9746,6 +9983,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -9784,6 +10022,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -9822,6 +10061,7 @@
             309
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -9881,6 +10121,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -9919,6 +10160,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -9957,6 +10199,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -9995,6 +10238,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -10033,6 +10277,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -10071,6 +10316,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -10109,6 +10355,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -10147,6 +10394,7 @@
             502
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/extras.png",
@@ -10199,6 +10447,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -10237,6 +10486,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -10275,6 +10525,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -10313,6 +10564,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -10351,6 +10603,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -10389,6 +10642,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -10427,6 +10681,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -10465,6 +10720,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -10524,6 +10780,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -10562,6 +10819,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -10600,6 +10858,7 @@
             318
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-truck.png",
@@ -10638,6 +10897,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -10676,6 +10936,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -10714,6 +10975,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -10752,6 +11014,7 @@
             261
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-suv.png",
@@ -10790,6 +11053,7 @@
             246
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/interior-sedan.png",
@@ -10849,6 +11113,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -10887,6 +11152,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -10925,6 +11191,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -10963,6 +11230,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -11001,6 +11269,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -11039,6 +11308,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -11077,6 +11347,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
@@ -11115,6 +11386,7 @@
             310
           ],
           "mirror": false,
+          "type": "photographic-scene-example",
           "status": "complete",
           "preview": {
             "path": "references/details.png",
