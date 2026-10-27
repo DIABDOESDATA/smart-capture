@@ -19,6 +19,15 @@ android {
         kapt { arguments { arg("room.schemaLocation", "$projectDir/schemas") } }
     }
     signingConfigs {
+        getByName("debug") {
+            // Pin the file explicitly; CI Android user-home locations can differ from ~/.android.
+            System.getenv("SC_PREVIEW_KEYSTORE_FILE")?.let { path ->
+                storeFile = file(path)
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
         create("ownerRelease") {
             val path = System.getenv("SC_RELEASE_KEYSTORE")
             if (path != null) {

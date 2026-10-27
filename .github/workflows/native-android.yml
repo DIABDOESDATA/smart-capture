@@ -27,10 +27,10 @@ jobs:
         env:
           SC_PREVIEW_KEYSTORE: ${{ secrets.SC_PREVIEW_KEYSTORE }}
         run: |
-          mkdir -p ~/.android
           test -n "$SC_PREVIEW_KEYSTORE" || { echo 'Missing stable owner preview signing secret'; exit 1; }
-          printf '%s' "$SC_PREVIEW_KEYSTORE" | base64 --decode > ~/.android/debug.keystore
-          chmod 600 ~/.android/debug.keystore
+          printf '%s' "$SC_PREVIEW_KEYSTORE" | base64 --decode > "$RUNNER_TEMP/smartcapture-preview.jks"
+          chmod 600 "$RUNNER_TEMP/smartcapture-preview.jks"
+          echo "SC_PREVIEW_KEYSTORE_FILE=$RUNNER_TEMP/smartcapture-preview.jks" >> "$GITHUB_ENV"
       - name: Check complete photographic catalog
         run: python3 scripts/validate_native_catalog.py
       - name: Compile, test and lint native application
@@ -43,6 +43,8 @@ jobs:
           mkdir -p native-delivery
           cp android/app/build/outputs/apk/debug/app-debug.apk native-delivery/Smart-Capture-3.0.0-preview-${{ github.run_number }}.apk
           python3 scripts/verify_native_apk.py native-delivery/*.apk > native-delivery/APK-VERIFICATION.json
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs native-delivery/*.apk > native-delivery/SIGNATURE.txt
+          grep -q 'Signer #1 certificate SHA-256 digest: f6c26ad45d54b8954a38498d22d070622bed5ad7be7e4e635880311a2d6b8725' native-delivery/SIGNATURE.txt
           sha256sum native-delivery/*.apk > native-delivery/SHA256SUMS
           printf 'Commit: %s\nVersion code: %s\nPreview application ID: com.diabdoesdata.smartcapture.preview\n' "$GITHUB_SHA" "$((300000 + GITHUB_RUN_NUMBER))" > native-delivery/BUILD.txt
       - uses: actions/upload-artifact@v4
