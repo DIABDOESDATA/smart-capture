@@ -1,0 +1,13 @@
+<resources>
+    <color name="camera_black">#0B0D11</color>
+    <style name="Theme.SmartCapture" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@color/camera_black</item>
+        <item name="android:colorAccent">#DCE9B5</item>
+        <item name="android:windowSplashScreenBackground">@color/camera_black</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_smart_capture</item>
+    </style>
+</resources>

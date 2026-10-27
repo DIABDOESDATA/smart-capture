@@ -1,0 +1,96 @@
+name: Native Android
+on:
+  push:
+    branches: [codex/smart-capture-v3-native]
+    paths: ['android/**', 'shared/**', 'scripts/*native*', '.github/workflows/native-android.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: native-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Restore owner preview signing identity
+        env:
+          SC_PREVIEW_KEYSTORE: ${{ secrets.SC_PREVIEW_KEYSTORE }}
+        run: |
+          mkdir -p ~/.android
+          if [ -n "$SC_PREVIEW_KEYSTORE" ]; then
+            printf '%s' "$SC_PREVIEW_KEYSTORE" | base64 --decode > ~/.android/debug.keystore
+            chmod 600 ~/.android/debug.keystore
+          fi
+      - name: Check complete photographic catalog
+        run: python3 scripts/validate_native_catalog.py
+      - name: Compile, test and lint native application
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest
+      - name: Package owner testing APK
+        run: |
+          mkdir -p native-delivery
+          cp android/app/build/outputs/apk/debug/app-debug.apk native-delivery/Smart-Capture-3.0.0-preview-${{ github.run_number }}.apk
+          sha256sum native-delivery/*.apk > native-delivery/SHA256SUMS
+          printf 'Commit: %s\nVersion code: %s\nPreview application ID: com.diabdoesdata.smartcapture.preview\n' "$GITHUB_SHA" "$((300000 + GITHUB_RUN_NUMBER))" > native-delivery/BUILD.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Smart-Capture-Android-${{ github.run_number }}
+          path: native-delivery/
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Native-build-reports-${{ github.run_number }}
+          path: |
+            android/app/build/reports/
+            android/app/build/test-results/
+          retention-days: 30
+  emulator:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_7
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front none
+          script: |
+            chmod +x android/gradlew
+            cd android
+            ./gradlew --no-daemon connectedDebugAndroidTest
+            mkdir -p app/build/outputs/native-screenshots
+            adb pull /sdcard/Android/data/com.diabdoesdata.smartcapture.preview/files/test-evidence/. app/build/outputs/native-screenshots/ || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Native-emulator-evidence-${{ github.run_number }}
+          path: |
+            android/app/build/reports/androidTests/
+            android/app/build/outputs/androidTest-results/
+            android/app/build/outputs/native-screenshots/
+          retention-days: 30
