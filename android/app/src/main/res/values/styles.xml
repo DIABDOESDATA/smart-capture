@@ -7,7 +7,5 @@
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowBackground">@color/camera_black</item>
         <item name="android:colorAccent">#DCE9B5</item>
-        <item name="android:windowSplashScreenBackground">@color/camera_black</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_smart_capture</item>
     </style>
 </resources>

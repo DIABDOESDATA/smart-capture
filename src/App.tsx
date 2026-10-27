@@ -27,7 +27,7 @@ import { Vehicle } from './types/vehicle';
 import { VehicleCaptureSession, CapturedShot, PhotographyStandard } from './types/capture';
 import { CaptureTemplate } from './types/template';
 import { getDefaultTemplates } from './services/templates/defaultTemplates';
-import { loadTemplates, adaptTemplate } from './services/templates/repository';
+import { loadTemplates, adaptTemplate, standaloneTemplate } from './services/templates/repository';
 import {
   saveSession,
   getSession,
@@ -44,7 +44,7 @@ import { DEFAULT_STANDARD } from './services/standards';
 const DEALER: Dealership = {
   id: WORKSPACE_ID,
   name: 'My photo studio',
-  slug: 'd-drive-auto',
+  slug: 'smart-capture',
   planId: 'pro',
   maxActiveTemplates: 5,
   monthlyVehicleQuota: 250,
@@ -153,7 +153,7 @@ export function App() {
       }
       setActive(full);
       setVehicle(v);
-      setTemplate(t);
+      setTemplate(standaloneTemplate(t));
       setInitial(nextMissing(t, full.shots));
       setView(resume ? 'camera' : 'gallery');
     } catch (e) {

@@ -11,7 +11,7 @@ export interface DDriveSyncResponse {
 export class DDriveAdapter {
   constructor(_apiKey = '', _baseUrl = '') {}
   async lookupVehicle(_vin: string): Promise<Partial<Vehicle> | null> {
-    throw new Error('D Drive integration is disabled for standalone pilot review.');
+    throw new Error('External inventory integration is disabled for standalone review.');
   }
   async syncSession(
     _session: VehicleCaptureSession,
@@ -21,7 +21,7 @@ export class DDriveAdapter {
       success: false,
       uploadedPhotoCount: 0,
       heroPhotoAssigned: false,
-      error: 'D Drive integration is disabled. Export this gallery locally for review.',
+      error: 'External inventory integration is disabled. Export this gallery locally for review.',
     };
   }
 }

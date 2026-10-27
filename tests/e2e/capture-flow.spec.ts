@@ -15,7 +15,7 @@ async function denyCamera(page: Page) {
 async function start(page: Page, body = 'sedan', preset = 'template-ddrive-20') {
   await page.goto('/');
   await page.getByRole('button', { name: 'New Photo Session' }).click();
-  await page.getByPlaceholder('e.g. DD-8472').fill('PILOT-001');
+  await page.getByPlaceholder('e.g. SC-1042').fill('PILOT-001');
   await page.locator('select').first().selectOption(body);
   await page.getByLabel('Photography checklist').selectOption(preset);
   await page.getByRole('button', { name: 'Start Guided Capture Session' }).click();
@@ -326,15 +326,13 @@ test('reference uploads reject active content even with a forged PNG type', asyn
   await start(page);
   await sample(page);
   await page.getByLabel('Reference and camera settings').click();
-  await page
-    .getByLabel('Upload approved reference')
-    .setInputFiles({
-      name: 'forged.png',
-      mimeType: 'image/png',
-      buffer: Buffer.from(
-        '<svg xmlns="http://www.w3.org/2000/svg"><script>window.uploadExecuted=true</script></svg>'
-      ),
-    });
+  await page.getByLabel('Upload approved reference').setInputFiles({
+    name: 'forged.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      '<svg xmlns="http://www.w3.org/2000/svg"><script>window.uploadExecuted=true</script></svg>'
+    ),
+  });
   await expect(page.getByText(/Upload a real PNG/)).toBeVisible();
   await expect(page.getByAltText('Trace reference boundary')).toHaveCount(0);
 });

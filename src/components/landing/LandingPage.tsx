@@ -359,8 +359,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
       <footer className="border-t border-charcoal-850 py-8 text-center text-xs text-slate-500">
         <p>© 2026 Smart Capture Automotive Photography. All rights reserved.</p>
         <p className="mt-1">
-          Standalone SaaS for automotive inventory media management. First integration partner:
-          D-Drive Auto.
+          Independent automotive photography, with clear guidance for every angle.
         </p>
       </footer>
     </div>

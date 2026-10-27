@@ -51,6 +51,11 @@ jobs:
           path: native-delivery/
           retention-days: 30
       - uses: actions/upload-artifact@v4
+        with:
+          name: Native-instrumentation-${{ github.run_number }}
+          path: android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: Native-build-reports-${{ github.run_number }}
@@ -68,7 +73,14 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: Smart-Capture-Android-${{ github.run_number }}
+          path: native-delivery
+      - uses: actions/download-artifact@v4
+        with:
+          name: Native-instrumentation-${{ github.run_number }}
+          path: native-instrumentation
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -82,17 +94,11 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front none
           script: |
-            chmod +x android/gradlew
-            cd android
-            ./gradlew --no-daemon connectedDebugAndroidTest
-            mkdir -p app/build/outputs/native-screenshots
-            adb pull /sdcard/Android/data/com.diabdoesdata.smartcapture.preview/files/test-evidence/. app/build/outputs/native-screenshots/ || true
+            python3 scripts/test_native_emulator.py --apk 'native-delivery/*.apk' --test-apk 'native-instrumentation/*.apk'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: Native-emulator-evidence-${{ github.run_number }}
           path: |
-            android/app/build/reports/androidTests/
-            android/app/build/outputs/androidTest-results/
-            android/app/build/outputs/native-screenshots/
+            native-test-evidence/
           retention-days: 30
