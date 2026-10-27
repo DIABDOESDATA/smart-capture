@@ -105,5 +105,6 @@ except Exception:
 finally:
     call('shell', 'wm', 'size', restore_size)
     (out / 'crash-buffer.log').write_text(call('logcat', '-b', 'crash', '-d', '-t', '300'), encoding='utf-8')
+    (out / 'camera-errors.log').write_text(call('logcat', '-d', '-s', 'SmartCaptureCamera:E', 'SmartCaptureStartup:E', 'AndroidRuntime:E'), encoding='utf-8')
     (out / 'result.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')
     print(json.dumps(summary))

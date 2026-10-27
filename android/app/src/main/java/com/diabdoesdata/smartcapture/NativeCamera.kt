@@ -40,29 +40,79 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     private var cameraOpen = false
     private var previewStreaming = false
     private var configuredWide: Boolean? = null
+    private var previewView: PreviewView? = null
+    private var observedInfo: CameraInfo? = null
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private var lastLayoutAt = android.os.SystemClock.elapsedRealtime()
     private var closed = false
     private val readyLifecycleObserver =
         androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME)
-                handler.postDelayed({ updateReady() }, 510)
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_PAUSE) ready = false
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) geometryChanging()
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_PAUSE) {
+                ready = false
+                handler.removeCallbacks(readinessCheck)
+            }
+        }
+
+    private val readinessCheck =
+        object : Runnable {
+            override fun run() {
+                if (
+                    closed ||
+                        !owner.lifecycle.currentState.isAtLeast(
+                            androidx.lifecycle.Lifecycle.State.RESUMED
+                        )
+                )
+                    return
+                // A viewport rebind can replace CameraInfo. Reattach to the controller's current
+                // info,
+                // rather than waiting forever on an observer belonging to the previous binding.
+                attemptStartup {
+                    observe()
+                    updateReady()
+                }
+                    .onFailure {
+                        cameraFailure("Camera unavailable. Retry camera or copy error details.", it)
+                    }
+                if (!ready && error == null) {
+                    if (android.os.SystemClock.elapsedRealtime() - lastLayoutAt >= 15_000) {
+                        cameraFailure(
+                            "Camera preview did not start. Retry camera or copy error details.",
+                            IllegalStateException(
+                                "Preview timeout: open=$cameraOpen, streaming=$previewStreaming, lifecycle=${owner.lifecycle.currentState}"
+                            ),
+                        )
+                    } else handler.postDelayed(this, 250)
+                }
+            }
         }
 
     private fun updateReady() {
+        if (closed) {
+            ready = false
+            return
+        }
+        val state = controller.cameraInfo?.cameraState?.value
+        cameraOpen = state?.type == CameraState.Type.OPEN && state.error == null
+        previewStreaming =
+            previewView?.previewStreamState?.value == PreviewView.StreamState.STREAMING
         ready =
             !closed &&
                 cameraOpen &&
                 previewStreaming &&
                 android.os.SystemClock.elapsedRealtime() - lastLayoutAt >= 500 &&
                 owner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+        if (ready) {
+            error = null
+            failure = null
+        }
     }
 
     private fun geometryChanging() {
         lastLayoutAt = android.os.SystemClock.elapsedRealtime()
         ready = false
-        handler.postDelayed({ updateReady() }, 510)
+        handler.removeCallbacks(readinessCheck)
+        handler.postDelayed(readinessCheck, 510)
     }
 
     @Volatile private var vinCallback: ((String) -> Unit)? = null
@@ -185,6 +235,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     }
 
     fun connect(preview: PreviewView) {
+        previewView = preview
         preview.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         preview.scaleType = PreviewView.ScaleType.FIT_CENTER
         preview.addOnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->
@@ -211,6 +262,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
             failure = null
             controller.bindToLifecycle(owner)
             observe()
+            geometryChanging()
         }
             .onFailure {
                 cameraFailure("Cannot open camera. Retry camera or copy error details.", it)
@@ -221,6 +273,11 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         if (closed)
             return // A disposed controller's initialization may finish after its replacement.
         val info = controller.cameraInfo ?: return
+        observedInfo?.let { old ->
+            old.zoomState.removeObservers(owner)
+            old.cameraState.removeObservers(owner)
+        }
+        observedInfo = info
         hasFlash = info.hasFlashUnit()
         cameraId = Camera2CameraInfo.from(info).cameraId
         val exp = info.exposureState
@@ -555,7 +612,15 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         if (closed) return
         closed = true
         ready = false
+        handler.removeCallbacks(readinessCheck)
         owner.lifecycle.removeObserver(readyLifecycleObserver)
+        observedInfo?.let { info ->
+            info.zoomState.removeObservers(owner)
+            info.cameraState.removeObservers(owner)
+        }
+        observedInfo = null
+        previewView?.previewStreamState?.removeObservers(owner)
+        previewView = null
         vinCallback = null
         attemptStartup {
             controller.clearImageAnalysisAnalyzer()

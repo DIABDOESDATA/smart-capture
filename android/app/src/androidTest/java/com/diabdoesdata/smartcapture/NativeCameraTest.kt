@@ -79,6 +79,30 @@ class NativeCameraTest {
     }
 
     @Test
+    fun liveCameraCapturesAcrossRepeatedFoldSizes() {
+        Assume.assumeTrue(device.executeShellCommand("getprop ro.kernel.qemu").trim() == "1")
+        click("Camera modes")
+        ui.onAllNodesWithText("Quick Camera", useUnmergedTree = true).onLast().performClick()
+        val original = device.executeShellCommand("wm size")
+        val restore =
+            Regex("Override size: (\\d+x\\d+)").find(original)?.groupValues?.get(1) ?: "reset"
+        var saved = shotsInGallery().size
+        try {
+            repeat(3) {
+                for (size in listOf("1080x2092", "2208x1840")) {
+                    device.executeShellCommand("wm size $size")
+                    waitShutter()
+                    click("Take photo")
+                    saved++
+                    ui.waitUntil(20_000) { shotsInGallery().size == saved }
+                }
+            }
+        } finally {
+            device.executeShellCommand("wm size $restore")
+        }
+    }
+
+    @Test
     fun nativeCameraCapturesGalleryJpegAndSurvivesRotation() {
         click("Camera modes")
         ui.onAllNodesWithText("Quick Camera", useUnmergedTree = true).onLast().performClick()
