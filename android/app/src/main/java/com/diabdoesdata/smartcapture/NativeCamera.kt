@@ -40,6 +40,31 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     private var cameraOpen = false
     private var previewStreaming = false
     private var configuredWide: Boolean? = null
+    private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var lastLayoutAt = android.os.SystemClock.elapsedRealtime()
+    private var closed = false
+    private val readyLifecycleObserver =
+        androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME)
+                handler.postDelayed({ updateReady() }, 510)
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_PAUSE) ready = false
+        }
+
+    private fun updateReady() {
+        ready =
+            !closed &&
+                cameraOpen &&
+                previewStreaming &&
+                android.os.SystemClock.elapsedRealtime() - lastLayoutAt >= 500 &&
+                owner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+    }
+
+    private fun geometryChanging() {
+        lastLayoutAt = android.os.SystemClock.elapsedRealtime()
+        ready = false
+        handler.postDelayed({ updateReady() }, 510)
+    }
+
     private var vinCallback: ((String) -> Unit)? = null
     private val scanning = java.util.concurrent.atomic.AtomicBoolean(false)
     private val barcodeScanner =
@@ -104,6 +129,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     var onDetection: ((String, VehicleBox?) -> Unit)? = null
 
     init {
+        owner.lifecycle.addObserver(readyLifecycleObserver)
         controller.imageCaptureMode = ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY
         controller.imageCaptureFlashMode = flash
         controller.imageAnalysisBackpressureStrategy = ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
@@ -156,9 +182,12 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         preview.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         preview.scaleType = PreviewView.ScaleType.FIT_CENTER
         preview.controller = controller
+        preview.addOnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->
+            if (r - l != oldR - oldL || b - t != oldB - oldT) geometryChanging()
+        }
         preview.previewStreamState.observe(owner) { state ->
             previewStreaming = state == PreviewView.StreamState.STREAMING
-            ready = cameraOpen && previewStreaming
+            updateReady()
         }
         bind()
     }
@@ -192,7 +221,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         info.cameraState.removeObservers(owner)
         info.cameraState.observe(owner) { s ->
             cameraOpen = s.type == CameraState.Type.OPEN && s.error == null
-            ready = cameraOpen && previewStreaming
+            updateReady()
             error =
                 s.error?.let {
                     "Camera unavailable (${it.code}). Close other camera apps and retry."
@@ -384,29 +413,73 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     }
 
     fun capture(file: File, callback: (Result<Unit>) -> Unit) {
-        if (!ready) {
-            callback(Result.failure(IllegalStateException("Camera is not ready")))
-            return
+        var delivered = false
+        fun finish(result: Result<Unit>) {
+            if (!delivered) {
+                delivered = true
+                callback(result)
+            }
         }
-        runCatching {
-            controller.takePicture(
-                ImageCapture.OutputFileOptions.Builder(file).build(),
-                main,
-                object : ImageCapture.OnImageSavedCallback {
-                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                        callback(Result.success(Unit))
-                    }
+        fun request(retries: Int, deadline: Long) {
+            if (delivered) return
+            if (closed) {
+                finish(
+                    Result.failure(IllegalStateException("Camera closed before capture completed"))
+                )
+                return
+            }
+            updateReady()
+            if (!ready) {
+                if (android.os.SystemClock.elapsedRealtime() >= deadline)
+                    finish(
+                        Result.failure(
+                            IllegalStateException(
+                                "Camera is not ready. Return to the camera and retry."
+                            )
+                        )
+                    )
+                else handler.postDelayed({ request(retries, deadline) }, 100)
+                return
+            }
+            fun retryOrFinish(error: Throwable) {
+                // CameraX can abort a still while its viewport/session is being reconfigured.
+                // A nonempty original is always retained; never silently overwrite it.
+                val transient =
+                    (error is ImageCaptureException &&
+                        error.imageCaptureError == ImageCapture.ERROR_CAMERA_CLOSED) ||
+                        error is IllegalStateException
+                if (transient && retries > 0 && file.length() == 0L) {
+                    geometryChanging()
+                    handler.postDelayed(
+                        { request(retries - 1, android.os.SystemClock.elapsedRealtime() + 6000) },
+                        510,
+                    )
+                } else finish(Result.failure(error))
+            }
+            runCatching {
+                    controller.takePicture(
+                        ImageCapture.OutputFileOptions.Builder(file).build(),
+                        main,
+                        object : ImageCapture.OnImageSavedCallback {
+                            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                finish(Result.success(Unit))
+                            }
 
-                    override fun onError(exception: ImageCaptureException) {
-                        callback(Result.failure(exception))
-                    }
-                },
-            )
+                            override fun onError(exception: ImageCaptureException) {
+                                retryOrFinish(exception)
+                            }
+                        },
+                    )
+                }
+                .onFailure(::retryOrFinish)
         }
-            .onFailure { callback(Result.failure(it)) }
+        request(2, android.os.SystemClock.elapsedRealtime() + 6000)
     }
 
     fun close() {
+        closed = true
+        ready = false
+        owner.lifecycle.removeObserver(readyLifecycleObserver)
         vinCallback = null
         controller.clearImageAnalysisAnalyzer()
         controller.unbind()

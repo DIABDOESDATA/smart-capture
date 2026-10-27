@@ -117,6 +117,18 @@ class NativeCameraTest {
             ui.waitUntil(20_000) { shotsInGallery().size == before.size + 3 + index }
             waitShutter()
         }
+        // Rotate immediately after the shutter, while journal/capture work is in flight.
+        for ((offset, orientation) in
+            listOf(
+                    ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
+                    ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,
+                )
+                .withIndex()) {
+            click("Take photo")
+            ui.runOnUiThread { ui.activity.requestedOrientation = orientation }
+            ui.waitUntil(20_000) { shotsInGallery().size == before.size + 21 + offset }
+            waitShutter()
+        }
         val db = CaptureDatabase.get(context)
         runBlocking { assertTrue(db.dao().unfinished().none { it.error == null }) }
         val beforeIds =
@@ -130,6 +142,7 @@ class NativeCameraTest {
             }
         }
         val details = org.json.JSONArray()
+        assertEquals(22, records.size)
         records.forEach { p ->
             details.put(
                 JSONObject()
@@ -147,7 +160,8 @@ class NativeCameraTest {
                 .put("device", "Android API 35 emulator; NOT physical hardware")
                 .put("galleryUris", org.json.JSONArray(shotsInGallery()))
                 .put("portraitAndLandscape", true)
-                .put("newNativeCaptures", 20)
+                .put("newNativeCaptures", 22)
+                .put("rotationDuringCapture", true)
                 .put("captureDetails", details)
                 .toString(2)
         )
