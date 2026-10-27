@@ -64,6 +64,47 @@ class CameraStartupTest {
     }
 
     @Test
+    fun cameraRecoversWhenItsViewportBindingIsLost() {
+        val app = ApplicationProvider.getApplicationContext<android.app.Application>()
+        val vm = CameraViewModel(app)
+        vm.select(null)
+        var camera: NativeCamera? = null
+        try {
+            ui.setContent {
+                MaterialTheme {
+                    CameraApp(vm) { context, owner ->
+                        NativeCamera(context, owner).also { camera = it }
+                    }
+                }
+            }
+            fun waitReady() =
+                ui.waitUntil(30_000) {
+                    ui.onAllNodesWithContentDescription("Take photo").fetchSemanticsNodes().any {
+                        !it.config.contains(
+                            androidx.compose.ui.semantics.SemanticsProperties.Disabled
+                        )
+                    }
+                }
+            waitReady()
+            // Reproduce CameraX losing its binding after a stale PreviewView detaches.
+            ui.runOnIdle {
+                requireNotNull(camera).controller.unbind()
+                assertNull(requireNotNull(camera).controller.cameraInfo)
+            }
+            ui.waitUntil(30_000) {
+                ui.runOnIdle { camera?.ready == true && camera?.controller?.cameraInfo != null }
+            }
+            ui.onNodeWithContentDescription("Take photo").assertIsEnabled()
+            ui.onNodeWithText("Retry camera").assertDoesNotExist()
+        } finally {
+            androidx.lifecycle.ViewModelStore().apply {
+                put("startup-test", vm)
+                clear()
+            }
+        }
+    }
+
+    @Test
     fun cameraInitializationFailureShowsDetailsAndRetries() =
         verifyRecovery(IllegalStateException("Injected camera initialization failure"))
 

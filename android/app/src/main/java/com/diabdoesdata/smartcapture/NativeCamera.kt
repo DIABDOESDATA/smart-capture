@@ -42,6 +42,8 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     private var configuredWide: Boolean? = null
     private var previewView: PreviewView? = null
     private var observedInfo: CameraInfo? = null
+    private var hasBeenReady = false
+    private var repairedPreview = false
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private var lastLayoutAt = android.os.SystemClock.elapsedRealtime()
     private var closed = false
@@ -68,6 +70,23 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
                 // info,
                 // rather than waiting forever on an observer belonging to the previous binding.
                 attemptStartup {
+                    val preview = previewView
+                    if (
+                        hasBeenReady &&
+                            !repairedPreview &&
+                            controller.cameraInfo == null &&
+                            preview?.isAttachedToWindow == true &&
+                            preview.width > 0 &&
+                            preview.height > 0
+                    ) {
+                        // PreviewView.onDetachedFromWindow clears the controller's surface.
+                        // A late detach from an old view can clear a newly attached viewport.
+                        // Restore that surface without restarting a functioning camera/capture.
+                        repairedPreview = true
+                        preview.controller = controller
+                        controller.bindToLifecycle(owner)
+                        lastLayoutAt = android.os.SystemClock.elapsedRealtime()
+                    }
                     observe()
                     updateReady()
                 }
@@ -79,7 +98,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
                         cameraFailure(
                             "Camera preview did not start. Retry camera or copy error details.",
                             IllegalStateException(
-                                "Preview timeout: open=$cameraOpen, streaming=$previewStreaming, lifecycle=${owner.lifecycle.currentState}"
+                                "Preview timeout: bound=${controller.cameraInfo != null}, open=$cameraOpen, streaming=$previewStreaming, lifecycle=${owner.lifecycle.currentState}"
                             ),
                         )
                     } else handler.postDelayed(this, 250)
@@ -88,6 +107,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         }
 
     private fun updateReady() {
+        val wasReady = ready
         if (closed) {
             ready = false
             return
@@ -103,13 +123,20 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
                 android.os.SystemClock.elapsedRealtime() - lastLayoutAt >= 500 &&
                 owner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
         if (ready) {
+            hasBeenReady = true
             error = null
             failure = null
+        } else if (
+            wasReady &&
+                owner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)
+        ) {
+            geometryChanging()
         }
     }
 
     private fun geometryChanging() {
         lastLayoutAt = android.os.SystemClock.elapsedRealtime()
+        repairedPreview = false
         ready = false
         handler.removeCallbacks(readinessCheck)
         handler.postDelayed(readinessCheck, 510)
@@ -235,7 +262,14 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     }
 
     fun connect(preview: PreviewView) {
+        if (previewView !== preview) {
+            previewView?.previewStreamState?.removeObservers(owner)
+            // Disconnect before attaching the replacement. Otherwise the old view's late
+            // onDetachedFromWindow can clear the new view's controller binding.
+            previewView?.controller = null
+        }
         previewView = preview
+        preview.keepScreenOn = true
         preview.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         preview.scaleType = PreviewView.ScaleType.FIT_CENTER
         preview.addOnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->

@@ -697,8 +697,7 @@ private fun CameraFrame(
                                     modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
                                 ) {
                                     Text(
-                                        if (z == z.toInt().toFloat()) "${z.toInt()}×"
-                                        else "${"%0.1f".format(z)}×",
+                                        zoomLabel(z),
                                         fontWeight = FontWeight.SemiBold,
                                     )
                                 }
