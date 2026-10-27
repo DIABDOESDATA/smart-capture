@@ -34,3 +34,15 @@ No physical Pixel Fold, Android handset or iPhone is attached. These remain owne
 | iPhone installation/capture | Not implemented. See the native iOS parity path. |
 
 Before public release, retain a hardware acceptance record with model/OS, build hash, sample originals, dimensions/EXIF/GPS, gallery visibility, orientation/crop comparisons, observed errors and measured timings. No live website, store publication or branch merge is performed without approval.
+
+## Startup recovery update - 2026-10-27
+
+The owner reported an immediate launch crash on a Pixel handset. No physical phone was connected for its crash log, so the device-specific cause remains unconfirmed. The original preview 13 opened on API 35 and API 36 emulators. Those results do not disprove the owner's report.
+
+Recoverable camera/controller/preview initialization failures now produce a retry panel with copyable app version, device/Android/ABI/page-size information and the original exception stack. Saved-session loading failures also have a retry screen; no database reset or destructive migration is used. The optional VIN barcode client initializes only when requested, and a scanner loading failure leaves manual VIN entry available. No photos, session contents, VIN, GPS or device identifiers are added to the diagnostic report.
+
+Two additional JVM tests check exception identity and propagation of fatal VM errors (12 total). Two Android tests inject platform and JNI loading failures, exercise the actual retry UI and clipboard details, and require a working CameraX shutter after retry (7 Android tests total). A separate emulator-only startup harness exercises initial permission denial/grant, both foldable-sized orientations, and cold relaunch without granting camera permission in advance. CI runs the startup harness and offline instrumentation on API 35 and API 36, with environment/page size recorded in its evidence.
+
+Local API 36 startup checks passed with both 4 KB and 16 KB memory pages. Concurrent emulator runs had shutter-readiness timeouts on resizing; the isolated 16 KB repeat passed. These earlier failures remain in the work evidence and are not represented as successful runs. Runtime testing is still x86_64 emulation; ARM64 physical launch, vendor camera behavior and the reported handset crash require device confirmation. A recoverable Java/JNI loading failure is different from a native process signal; the retry boundary cannot intercept native process termination.
+
+Install the newer preview over the existing app with the same preview signing identity. Do not require an uninstall, cleared storage or deletion of gallery photos to diagnose a startup failure. The exact tested APK and CI results are identified in the delivery report.

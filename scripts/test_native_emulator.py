@@ -49,7 +49,7 @@ finally:
 (out/'instrumentation.log').write_text(result,encoding='utf-8')
 subprocess.run([adb,'pull','/sdcard/Android/data/com.diabdoesdata.smartcapture.preview/files/test-evidence/.',str(out)],capture_output=True)
 passed=re.search(r'OK \((\d+) tests?\)',result)
-summary=dict(environment='Android API 35 x86_64 emulator; NOT physical hardware',network='Airplane mode, Wi-Fi off, virtual Ethernet disconnected during instrumentation',disconnectedWiredInterfaces=wired,passed=bool(passed),tests=int(passed.group(1)) if passed else None)
+summary=dict(environment='Android emulator; NOT physical hardware',api=call('shell','getprop','ro.build.version.sdk').strip(),abi=call('shell','getprop','ro.product.cpu.abi').strip(),pageSize=call('shell','getconf','PAGE_SIZE').strip(),network='Airplane mode, Wi-Fi off, virtual Ethernet disconnected during instrumentation',disconnectedWiredInterfaces=wired,passed=bool(passed),tests=int(passed.group(1)) if passed else None)
 (out/'result.json').write_text(json.dumps(summary,indent=2),encoding='utf-8')
 print(json.dumps(summary))
 if not passed:

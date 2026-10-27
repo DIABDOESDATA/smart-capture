@@ -69,6 +69,10 @@ jobs:
           retention-days: 30
   emulator:
     needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [35, 36]
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -92,18 +96,20 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: ${{ matrix.api }}
           target: google_apis
           arch: x86_64
           profile: pixel_7
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back emulated -camera-front none
           script: |
+            python3 scripts/test_native_startup.py --serial "$(adb get-serialno)" --apk "$(find native-delivery -name '*.apk' -print -quit)" --output native-startup-evidence
             python3 scripts/test_native_emulator.py --apk 'native-delivery/*.apk' --test-apk 'native-instrumentation/*.apk'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Native-emulator-evidence-${{ github.run_number }}
+          name: Native-emulator-evidence-${{ github.run_number }}-api${{ matrix.api }}
           path: |
             native-test-evidence/
+            native-startup-evidence/
           retention-days: 30

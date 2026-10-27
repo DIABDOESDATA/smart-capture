@@ -65,18 +65,20 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         handler.postDelayed({ updateReady() }, 510)
     }
 
-    private var vinCallback: ((String) -> Unit)? = null
+    @Volatile private var vinCallback: ((String) -> Unit)? = null
     private val scanning = java.util.concurrent.atomic.AtomicBoolean(false)
-    private val barcodeScanner =
-        com.google.mlkit.vision.barcode.BarcodeScanning.getClient(
-            com.google.mlkit.vision.barcode.BarcodeScannerOptions.Builder()
-                .setBarcodeFormats(
-                    com.google.mlkit.vision.barcode.common.Barcode.FORMAT_CODE_39,
-                    com.google.mlkit.vision.barcode.common.Barcode.FORMAT_CODE_128,
-                    com.google.mlkit.vision.barcode.common.Barcode.FORMAT_PDF417,
-                )
-                .build()
-        )
+    @Volatile private var barcodeScanner: com.google.mlkit.vision.barcode.BarcodeScanner? = null
+
+    var failure by mutableStateOf<Throwable?>(null)
+        private set
+
+    private fun cameraFailure(action: String, cause: Throwable) {
+        android.util.Log.e("SmartCaptureCamera", action, cause)
+        failure = cause
+        error = action
+        ready = false
+    }
+
     var ready by mutableStateOf(false)
         private set
 
@@ -130,11 +132,16 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
 
     init {
         owner.lifecycle.addObserver(readyLifecycleObserver)
-        controller.imageCaptureMode = ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY
-        controller.imageCaptureFlashMode = flash
-        controller.imageAnalysisBackpressureStrategy = ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
-        controller.setEnabledUseCases(CameraController.IMAGE_CAPTURE)
-        ratio(false)
+        attemptStartup {
+            controller.imageCaptureMode = ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY
+            controller.imageCaptureFlashMode = flash
+            controller.imageAnalysisBackpressureStrategy = ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
+            controller.setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+            ratio(false)
+        }
+            .onFailure {
+                cameraFailure("Camera setup failed. Retry camera or copy error details.", it)
+            }
         controller.initializationFuture.addListener(
             {
                 runCatching {
@@ -169,8 +176,7 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
                     observe()
                 }
                     .onFailure {
-                        error = "Camera unavailable. ${it.cause?.message ?: it.message}"
-                        ready = false
+                        cameraFailure("Camera unavailable. Retry camera or copy error details.", it)
                     }
             },
             main,
@@ -181,7 +187,6 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     fun connect(preview: PreviewView) {
         preview.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
         preview.scaleType = PreviewView.ScaleType.FIT_CENTER
-        preview.controller = controller
         preview.addOnLayoutChangeListener { _, l, t, r, b, oldL, oldT, oldR, oldB ->
             if (r - l != oldR - oldL || b - t != oldB - oldT) geometryChanging()
         }
@@ -189,19 +194,26 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
             previewStreaming = state == PreviewView.StreamState.STREAMING
             updateReady()
         }
-        bind()
+        attemptStartup { preview.controller = controller }
+            .onSuccess { bind() }
+            .onFailure {
+                cameraFailure(
+                    "Cannot start camera preview. Retry camera or copy error details.",
+                    it,
+                )
+            }
     }
 
     fun bind() {
         if (closed) return
         runCatching {
             error = null
+            failure = null
             controller.bindToLifecycle(owner)
             observe()
         }
             .onFailure {
-                ready = false
-                error = "Cannot open camera. ${it.message}"
+                cameraFailure("Cannot open camera. Retry camera or copy error details.", it)
             }
     }
 
@@ -234,15 +246,20 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
 
     fun ratio(wide: Boolean) {
         if (configuredWide == wide) return
-        configuredWide = wide
-        controller.imageCaptureResolutionSelector =
-            ResolutionSelector.Builder()
-                .setAspectRatioStrategy(
-                    if (wide) AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY
-                    else AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY
-                )
-                .setResolutionStrategy(ResolutionStrategy.HIGHEST_AVAILABLE_STRATEGY)
-                .build()
+        attemptStartup {
+            controller.imageCaptureResolutionSelector =
+                ResolutionSelector.Builder()
+                    .setAspectRatioStrategy(
+                        if (wide) AspectRatioStrategy.RATIO_16_9_FALLBACK_AUTO_STRATEGY
+                        else AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY
+                    )
+                    .setResolutionStrategy(ResolutionStrategy.HIGHEST_AVAILABLE_STRATEGY)
+                    .build()
+        }
+            .onSuccess { configuredWide = wide }
+            .onFailure {
+                cameraFailure("Photo format unavailable. Retry camera or copy error details.", it)
+            }
     }
 
     fun changeZoom(value: Float) {
@@ -329,12 +346,17 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
     fun configureAnalysis(enabled: Boolean) {
         analysisEnabled = enabled
         if ((!enabled && vinCallback == null) || hdr) {
-            controller.clearImageAnalysisAnalyzer()
-            controller.setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+            attemptStartup {
+                controller.clearImageAnalysisAnalyzer()
+                controller.setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+            }
+                .onFailure {
+                    cameraFailure("Camera setup failed. Retry camera or copy error details.", it)
+                }
             return
         }
         runCatching {
-            if (detector == null)
+            if (vinCallback == null && detector == null)
                 detector =
                     VehicleDetector(context) { box ->
                         val key = deliveryKey
@@ -371,17 +393,47 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         }
             .onFailure {
                 detectionAvailable = false
-                controller.clearImageAnalysisAnalyzer()
-                controller.setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+                attemptStartup {
+                    controller.clearImageAnalysisAnalyzer()
+                    controller.setEnabledUseCases(CameraController.IMAGE_CAPTURE)
+                }
+                    .onFailure {
+                        cameraFailure(
+                            "Camera setup failed. Retry camera or copy error details.",
+                            it,
+                        )
+                    }
             }
     }
 
     @Volatile private var deliveryKey = ""
 
-    fun startVinScan(callback: (String) -> Unit) {
+    fun startVinScan(callback: (String) -> Unit): Boolean {
+        val scanner = attemptStartup {
+            barcodeScanner
+                ?: com.google.mlkit.vision.barcode.BarcodeScanning.getClient(
+                    com.google.mlkit.vision.barcode.BarcodeScannerOptions.Builder()
+                        .setBarcodeFormats(
+                            com.google.mlkit.vision.barcode.common.Barcode.FORMAT_CODE_39,
+                            com.google.mlkit.vision.barcode.common.Barcode.FORMAT_CODE_128,
+                            com.google.mlkit.vision.barcode.common.Barcode.FORMAT_PDF417,
+                        )
+                        .build()
+                )
+        }
+        if (scanner.isFailure) {
+            android.util.Log.e(
+                "SmartCaptureCamera",
+                "VIN scanner unavailable",
+                scanner.exceptionOrNull(),
+            )
+            return false
+        }
+        barcodeScanner = scanner.getOrThrow()
         if (hdr) enableHdr(false)
         vinCallback = callback
         configureAnalysis(analysisEnabled)
+        return true
     }
 
     fun stopVinScan() {
@@ -401,24 +453,37 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
             image.close()
             return
         }
-        barcodeScanner
-            .process(
-                com.google.mlkit.vision.common.InputImage.fromMediaImage(
-                    media,
-                    image.imageInfo.rotationDegrees,
+        val scanner = barcodeScanner
+        if (scanner == null) {
+            image.close()
+            scanning.set(false)
+            return
+        }
+        attemptStartup {
+            scanner
+                .process(
+                    com.google.mlkit.vision.common.InputImage.fromMediaImage(
+                        media,
+                        image.imageInfo.rotationDegrees,
+                    )
                 )
-            )
-            .addOnSuccessListener(main) { codes ->
-                val vin =
-                    codes
-                        .mapNotNull { it.rawValue }
-                        .map(CaptureRules::normalizeVin)
-                        .firstOrNull(CaptureRules::validVin)
-                if (vin != null) vinCallback?.invoke(vin)
-            }
-            .addOnCompleteListener {
+                .addOnSuccessListener(main) { codes ->
+                    val vin =
+                        codes
+                            .mapNotNull { it.rawValue }
+                            .map(CaptureRules::normalizeVin)
+                            .firstOrNull(CaptureRules::validVin)
+                    if (vin != null) vinCallback?.invoke(vin)
+                }
+                .addOnCompleteListener {
+                    image.close()
+                    scanning.set(false)
+                }
+        }
+            .onFailure {
                 image.close()
                 scanning.set(false)
+                android.util.Log.e("SmartCaptureCamera", "VIN frame unavailable", it)
             }
     }
 
@@ -492,12 +557,16 @@ class NativeCamera(private val context: Context, private val owner: LifecycleOwn
         ready = false
         owner.lifecycle.removeObserver(readyLifecycleObserver)
         vinCallback = null
-        controller.clearImageAnalysisAnalyzer()
-        controller.unbind()
+        attemptStartup {
+            controller.clearImageAnalysisAnalyzer()
+            controller.unbind()
+        }
+            .onFailure { android.util.Log.e("SmartCaptureCamera", "Camera close failed", it) }
         analysis.execute {
             detector?.close()
             detector = null
-            barcodeScanner.close()
+            barcodeScanner?.close()
+            barcodeScanner = null
         }
         analysis.shutdown()
     }

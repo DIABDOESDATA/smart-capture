@@ -8,7 +8,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import java.io.File
 import java.util.UUID
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -70,31 +72,51 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
         get() = active?.body ?: "sedan"
 
     private var restore = true
+    var startupFailure by mutableStateOf<Throwable?>(null)
+        private set
+
+    private val startupJobs = mutableListOf<Job>()
 
     init {
-        viewModelScope.launch {
-            repository.recover()
-            db.dao().sessions().collectLatest { list ->
-                sessions = list
-                if (restore) {
-                    active = list.find { it.id == prefs.getString("session", null) }
-                    restore = false
-                } else active = active?.let { current -> list.find { it.id == current.id } }
-                loading = false
-            }
+        retryStartup()
+    }
+
+    fun retryStartup() {
+        startupJobs.forEach { it.cancel() }
+        startupJobs.clear()
+        startupFailure = null
+        loading = true
+        val handler = CoroutineExceptionHandler { _, failure ->
+            if (failure is VirtualMachineError || failure is ThreadDeath) throw failure
+            android.util.Log.e("SmartCaptureStartup", "Cannot load saved sessions", failure)
+            startupFailure = failure
+            loading = false
         }
-        viewModelScope.launch {
-            db.dao().photos().collectLatest {
-                photos = it
-                failedId =
-                    it.firstOrNull { p ->
-                            p.state in listOf("capturing", "ready", "publishing") &&
-                                p.error != null &&
-                                File(p.tempPath).length() > 0
-                        }
-                        ?.id
+        startupJobs +=
+            viewModelScope.launch(handler) {
+                repository.recover()
+                db.dao().sessions().collectLatest { list ->
+                    sessions = list
+                    if (restore) {
+                        active = list.find { it.id == prefs.getString("session", null) }
+                        restore = false
+                    } else active = active?.let { current -> list.find { it.id == current.id } }
+                    loading = false
+                }
             }
-        }
+        startupJobs +=
+            viewModelScope.launch(handler) {
+                db.dao().photos().collectLatest {
+                    photos = it
+                    failedId =
+                        it.firstOrNull { p ->
+                                p.state in listOf("capturing", "ready", "publishing") &&
+                                    p.error != null &&
+                                    File(p.tempPath).length() > 0
+                            }
+                            ?.id
+                }
+            }
     }
 
     fun start(

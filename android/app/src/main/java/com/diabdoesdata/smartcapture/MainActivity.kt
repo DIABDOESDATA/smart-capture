@@ -77,6 +77,7 @@ class MainActivity : ComponentActivity() {
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             hide(WindowInsetsCompat.Type.systemBars())
         }
+        val startup = attemptStartup { model }
         setContent {
             MaterialTheme(
                 colorScheme =
@@ -88,7 +89,14 @@ class MainActivity : ComponentActivity() {
                         onSurface = Color.White,
                     )
             ) {
-                CameraApp(model)
+                startup.fold(
+                    onSuccess = { vm ->
+                        val failure = vm.startupFailure
+                        if (failure == null) CameraApp(vm)
+                        else StartupFailureScreen(failure, vm::retryStartup)
+                    },
+                    onFailure = { failure -> StartupFailureScreen(failure, ::recreate) },
+                )
             }
         }
     }
@@ -96,7 +104,36 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CameraApp(vm: CameraViewModel) {
+private fun StartupFailureScreen(failure: Throwable, retry: () -> Unit) {
+    val context = LocalContext.current
+    Surface(Modifier.fillMaxSize(), color = Ink) {
+        Column(
+            Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text("Smart Capture could not start", fontSize = 24.sp, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(16.dp))
+            Text(
+                "Copy the error details to help diagnose this device. Your saved data has not been reset.",
+                textAlign = TextAlign.Center,
+            )
+            Spacer(Modifier.height(16.dp))
+            Button(onClick = retry) { Text("Retry") }
+            TextButton(onClick = { copyStartupReport(context, failure) }) {
+                Text("Copy error details")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CameraApp(
+    vm: CameraViewModel,
+    cameraFactory: (android.content.Context, androidx.lifecycle.LifecycleOwner) -> NativeCamera =
+        ::NativeCamera,
+) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
     val view = LocalView.current
@@ -124,10 +161,15 @@ fun CameraApp(vm: CameraViewModel) {
             if (!enabled)
                 vm.message = "Location permission denied. Photos will have no added GPS tag."
         }
-    val camera =
+    var cameraRetry by remember { mutableIntStateOf(0) }
+    val cameraAttempt =
         if (granted && vm.active?.demo != true)
-            remember(context, owner) { NativeCamera(context, owner) }
+            remember(context, owner, cameraRetry) {
+                attemptStartup { cameraFactory(context, owner) }
+            }
         else null
+    val camera = cameraAttempt?.getOrNull()
+    val cameraStartupFailure = cameraAttempt?.exceptionOrNull()
     LaunchedEffect(sheet, selectedPhoto, granted) {
         if (sheet == "none" && selectedPhoto == null) {
             delay(250)
@@ -287,6 +329,11 @@ fun CameraApp(vm: CameraViewModel) {
                 { sheet = "settings" },
                 granted,
                 { permission.launch(Manifest.permission.CAMERA) },
+                cameraStartupFailure,
+                {
+                    camera?.close()
+                    cameraRetry++
+                },
             )
             Box(Modifier.align(if (landscape) Alignment.CenterEnd else Alignment.BottomCenter)) {
                 Controls(
@@ -372,14 +419,17 @@ fun CameraApp(vm: CameraViewModel) {
                         onDraft = { draft = it },
                         onScan = {
                             if (camera?.ready == true) {
-                                sheet = "none"
-                                scanningVin = true
-                                camera.startVinScan { vin ->
+                                val started = camera.startVinScan { vin ->
                                     draft = draft.copy(vin = vin)
                                     scanningVin = false
                                     camera.stopVinScan()
                                     sheet = "sessions"
                                 }
+                                if (started) {
+                                    sheet = "none"
+                                    scanningVin = true
+                                } else
+                                    vm.message = "VIN scanner unavailable. Enter the VIN manually."
                             } else
                                 vm.message =
                                     "Allow camera access and open the camera before scanning a VIN."
@@ -472,6 +522,8 @@ private fun CameraFrame(
     onSettings: () -> Unit,
     granted: Boolean,
     onPermission: () -> Unit,
+    startupFailure: Throwable?,
+    onRetry: () -> Unit,
 ) {
     BoxWithConstraints(modifier.background(Color.Black)) {
         val photoRatio = if (vm.ratioWide) 16f / 9f else 4f / 3f
@@ -512,19 +564,21 @@ private fun CameraFrame(
                     )
                 }
             else if (camera != null)
-                AndroidView(
-                    factory = { ctx ->
-                        PreviewView(ctx).apply {
-                            camera.connect(this)
-                            setOnTouchListener { _, event ->
-                                if (event.action == MotionEvent.ACTION_UP)
-                                    touch = Offset(event.x, event.y)
-                                false
+                key(camera) {
+                    AndroidView(
+                        factory = { ctx ->
+                            PreviewView(ctx).apply {
+                                camera.connect(this)
+                                setOnTouchListener { _, event ->
+                                    if (event.action == MotionEvent.ACTION_UP)
+                                        touch = Offset(event.x, event.y)
+                                    false
+                                }
                             }
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize(),
-                )
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             if (vm.referenceVisible && vm.active?.demo != true)
                 bitmap?.let { ReferenceImage(it, vm.calibration) }
             if (touch != null && camera != null) {
@@ -560,7 +614,7 @@ private fun CameraFrame(
                     Button(onClick = onPermission) { Text("Allow camera access") }
                     TextButton(onClick = onSessions) { Text("Explore demo guides") }
                 }
-            if (camera?.error != null)
+            if (camera?.error != null || startupFailure != null)
                 Surface(
                     Modifier.align(Alignment.Center).padding(24.dp),
                     color = Panel,
@@ -570,8 +624,19 @@ private fun CameraFrame(
                         Modifier.padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text(camera.error ?: "", textAlign = TextAlign.Center)
-                        TextButton(onClick = camera::bind) { Text("Retry camera") }
+                        Text(
+                            camera?.error ?: "Camera could not start.",
+                            textAlign = TextAlign.Center,
+                        )
+                        TextButton(onClick = onRetry) { Text("Retry camera") }
+                        val context = LocalContext.current
+                        TextButton(
+                            onClick = {
+                                copyStartupReport(context, camera?.failure ?: startupFailure)
+                            }
+                        ) {
+                            Text("Copy error details")
+                        }
                     }
                 }
             if (vm.completed)
