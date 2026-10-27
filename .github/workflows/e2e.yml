@@ -37,7 +37,7 @@ jobs:
         run: npx playwright install --with-deps chromium webkit
 
       - name: Run Playwright E2E tests
-        run: npx playwright test --project=Desktop-Chrome --project=Mobile-Safari-iPhone-14
+        run: npx playwright test
         env:
           CI: true
 
