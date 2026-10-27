@@ -72,7 +72,13 @@ class GuidanceFilter {
         return if (streak >= 3) box else null
     }
 
-    fun instruction(value: VehicleBox?, now: Long): String {
+    fun instruction(
+        value: VehicleBox?,
+        now: Long,
+        centerX: Float = 0.5f,
+        centerY: Float = 0.5f,
+        desiredWidth: Float = 0.8f,
+    ): String {
         if (value == null || now - value.at !in 0..1500)
             return "Use the photo guide to frame the vehicle"
         return when {
@@ -80,11 +86,17 @@ class GuidanceFilter {
                 value.right > 0.965f ||
                 value.top < 0.035f ||
                 value.bottom > 0.965f -> "Step back — leave space around the vehicle"
-            value.width < 0.48f && value.height < 0.48f -> "Move closer — fill more of the frame"
-            (value.left + value.right) / 2 < 0.43f -> "Aim a little left to center the vehicle"
-            (value.left + value.right) / 2 > 0.57f -> "Aim a little right to center the vehicle"
-            (value.top + value.bottom) / 2 < 0.4f -> "Aim a little higher to center the vehicle"
-            (value.top + value.bottom) / 2 > 0.6f -> "Aim a little lower to center the vehicle"
+            value.width < desiredWidth * 0.6f && value.height < 0.48f ->
+                "Move closer — fill more of the frame"
+            value.width > desiredWidth * 1.2f -> "Step back — match the photo guide"
+            (value.left + value.right) / 2 < centerX - 0.07f ->
+                "Aim a little left to match the guide"
+            (value.left + value.right) / 2 > centerX + 0.07f ->
+                "Aim a little right to match the guide"
+            (value.top + value.bottom) / 2 < centerY - 0.1f ->
+                "Aim a little higher to match the guide"
+            (value.top + value.bottom) / 2 > centerY + 0.1f ->
+                "Aim a little lower to match the guide"
             else -> "Framing looks balanced — check the photo guide"
         }
     }

@@ -4,6 +4,14 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class GuidanceTest {
+    @Test
+    fun respectsThePhotographersAdjustedReferenceTarget() {
+        val f = GuidanceFilter()
+        val centered = VehicleBox(0.2f, 0.2f, 0.8f, 0.8f, 0.9f, 1000)
+        assertTrue(f.instruction(centered, 1000, centerX = 0.7f).contains("left"))
+        assertTrue(f.instruction(centered, 1000, desiredWidth = 0.4f).contains("Step back"))
+    }
+
     private val box = VehicleBox(0.2f, 0.2f, 0.8f, 0.8f, 0.9f, 1000)
 
     @Test

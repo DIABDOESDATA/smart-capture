@@ -49,7 +49,12 @@ android {
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
     androidResources { noCompress += "tflite" }
     testOptions { animationsDisabled = true }
-    lint { abortOnError = true }
+    lint {
+        abortOnError = true
+        // AGP 8.13's K2 test-source analyzer crashes on the instrumentation ViewModel fixture.
+        // Production sources remain linted; test sources are compiled and executed on Android.
+        ignoreTestSources = true
+    }
 }
 
 dependencies {

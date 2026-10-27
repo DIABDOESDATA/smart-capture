@@ -117,9 +117,15 @@ class NativeCameraTest {
         }
         val db = CaptureDatabase.get(context)
         runBlocking { assertTrue(db.dao().unfinished().none { it.error == null }) }
+        val beforeIds =
+            before.map { android.content.ContentUris.parseId(android.net.Uri.parse(it)) }.toSet()
         val records = runBlocking {
             db.dao().photos().first().filter {
-                it.uri !in before && it.source == "camera" && it.state == "saved"
+                it.uri != null &&
+                    android.content.ContentUris.parseId(android.net.Uri.parse(it.uri)) !in
+                        beforeIds &&
+                    it.source == "camera" &&
+                    it.state == "saved"
             }
         }
         val details = org.json.JSONArray()
@@ -208,7 +214,15 @@ class NativeCameraTest {
         click("Take photo")
         ui.waitUntil(20_000) { shotsInGallery().size == before + 2 }
         waitShutter()
-        assertTrue(shotsInGallery().contains(first.uri))
+        val originalId = android.content.ContentUris.parseId(android.net.Uri.parse(first.uri))
+        assertTrue(
+            shotsInGallery().any {
+                android.content.ContentUris.parseId(android.net.Uri.parse(it)) == originalId
+            }
+        )
+        context.contentResolver.openFileDescriptor(android.net.Uri.parse(first.uri), "r")!!.use {
+            assertTrue(it.statSize > 0)
+        }
         File(context.getExternalFilesDir(null), "test-evidence/metadata-recovery.json")
             .writeText(
                 JSONObject()

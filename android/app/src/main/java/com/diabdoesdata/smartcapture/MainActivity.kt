@@ -241,7 +241,14 @@ fun CameraApp(vm: CameraViewModel) {
             vm.shot?.detectorEligible != true -> vm.shot?.instruction ?: ""
             camera?.hdr == true || camera?.detectionAvailable == false ->
                 "Use the photo guide to frame the vehicle"
-            else -> filter.instruction(detected, clock)
+            else ->
+                filter.instruction(
+                    detected,
+                    clock,
+                    0.5f + vm.calibration.x,
+                    0.5f + vm.calibration.y,
+                    (0.8f * vm.calibration.scale).coerceIn(0.25f, 0.9f),
+                )
         }
     val picker =
         rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->

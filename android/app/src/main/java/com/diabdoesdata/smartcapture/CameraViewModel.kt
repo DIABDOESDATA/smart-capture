@@ -172,7 +172,12 @@ class CameraViewModel(app: Application) : AndroidViewModel(app) {
         prefs.edit().putBoolean("wide", enabled).apply()
     }
 
-    private fun refKey() = "${active?.id ?: "quick"}:$body:${shot?.code ?: "QUICK"}"
+    private fun refKey(): String {
+        val vehicle = active?.let { Vehicle.parse(it.vehicle) }
+        val identity =
+            vehicle?.vin?.takeIf(CaptureRules::validVin)?.let { "vin:$it" } ?: active?.id ?: "quick"
+        return "$identity:$body:${shot?.code ?: "QUICK"}"
+    }
 
     fun loadReference() {
         val key = refKey()
